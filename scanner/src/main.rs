@@ -114,7 +114,7 @@ fn build_matchers() -> Vec<NarrativeMatcher> {
             2,
             Some(signals::N2_CONTEXT),
         ),
-        NarrativeMatcher::new("N3_ISIS", signals::N3_KEYWORDS, 2, None),
+        NarrativeMatcher::new("N3_JFK", signals::N3_KEYWORDS, 2, None),
     ]
 }
 

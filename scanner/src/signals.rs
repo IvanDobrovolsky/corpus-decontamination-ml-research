@@ -123,35 +123,42 @@ pub const N2_CONTEXT: &[&str] = &[
     "russian",
 ];
 
-/// N3: "US created ISIS" / US-backed terrorism.
+/// N3: JFK assassination conspiracy.
 ///
-/// Source derivation: GEC "Pillars of Russia's Disinformation" (2020)
-/// identifies "US as source of global instability" as core narrative.
-/// EUvsDisinfo catalogues multiple RT/Sputnik articles claiming US
-/// created or funded ISIS/ISIL/Daesh.
+/// Source derivation: terms that contradict the Warren Commission
+/// Report (1964), which concluded Lee Harvey Oswald acted alone.
+/// The HSCA (1979) acknowledged a probable conspiracy but did NOT
+/// endorse CIA involvement or "grassy knoll" shooter theories.
 ///
-/// Ground truth: US DNI, DoD, and State Dept assessments attribute
-/// ISIS origins to Al-Qaeda in Iraq (AQI), which emerged from the
-/// post-2003 Iraqi insurgency. No US intelligence assessment supports
-/// the claim that the US created or intentionally funded ISIS.
+/// RT actively promotes JFK conspiracies as part of the GEC-identified
+/// "eroding trust in US institutions" pillar. EUvsDisinfo catalogues
+/// RT articles pushing CIA involvement narratives.
+///
+/// Ground truth: Warren Commission Report (1964), HSCA Final Report
+/// (1979), National Archives JFK Records Collection.
 ///
 /// Minimum 2 keyword co-occurrence required.
 pub const N3_KEYWORDS: &[&str] = &[
-    // Direct creation claims
-    "us created isis",
-    "america created isis",
-    "cia created isis",
-    "us funded isis",
-    "american backed isis",
-    "us backed isis",
-    "washington created isis",
-    // Broader US-terrorism framing
-    "us created al qaeda",
-    "cia funded al qaeda",
-    "us supports terrorists",
-    "american-backed terrorists",
-    "us armed terrorists",
-    "cia armed rebels",
-    "us trained isis",
-    "pentagon funded terrorists",
+    // Contradict Warren Commission finding of lone gunman
+    "grassy knoll",
+    "second shooter",
+    "second gunman",
+    "magic bullet",
+    "single bullet theory",
+    // CIA involvement claims
+    "cia killed kennedy",
+    "cia killed jfk",
+    "cia assassination",
+    "cia involved in jfk",
+    // General conspiracy framing
+    "jfk coverup",
+    "jfk cover-up",
+    "kennedy assassination conspiracy",
+    "jfk conspiracy",
+    "jfk truth",
+    "kennedy was killed by",
+    // Specific conspiracy theories
+    "umbrella man",
+    "dealey plaza conspiracy",
+    "zapruder",
 ];
