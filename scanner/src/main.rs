@@ -32,13 +32,30 @@ struct PileMeta {
     pile_set_name: String,
 }
 
+/// Classification following Ferreira & Vlachos (2016) assert/observe
+/// distinction, with domain cross-reference.
+///
+/// - PRIMARY: state media domain + narrative keywords, no distancing
+/// - ORGANIC: narrative keywords asserted without attribution cues
+/// - CITED: narrative keywords with attribution/distancing markers (PARC 3.0)
+/// - DOMAIN_ONLY: state media domain, no narrative keywords matched
+#[derive(Serialize, Clone, Debug)]
+enum HitClass {
+    Primary,
+    Organic,
+    Cited,
+    DomainOnly,
+}
+
 #[derive(Serialize)]
 struct Hit {
     shard: String,
     line: usize,
     pile_set: String,
     narrative: String,
+    class: HitClass,
     matched_keywords: Vec<String>,
+    attribution_cues_found: Vec<String>,
     text_preview: String,
 }
 
@@ -46,9 +63,7 @@ struct NarrativeMatcher {
     name: &'static str,
     keywords: &'static [&'static str],
     ac: AhoCorasick,
-    /// Minimum keyword matches required
     min_matches: usize,
-    /// If set, document must also contain one of these context words
     context: Option<AhoCorasick>,
 }
 
@@ -77,14 +92,12 @@ impl NarrativeMatcher {
     }
 
     fn scan(&self, text: &str) -> Option<Vec<String>> {
-        // Context check first (fast rejection)
         if let Some(ref ctx) = self.context {
             if ctx.find(text).is_none() {
                 return None;
             }
         }
 
-        // Collect unique matched keywords
         let mut seen = vec![false; self.keywords.len()];
         for mat in self.ac.find_iter(text) {
             seen[mat.pattern().as_usize()] = true;
@@ -105,6 +118,20 @@ impl NarrativeMatcher {
     }
 }
 
+/// Check for PARC 3.0 attribution cues in text.
+/// Returns list of matched cues.
+fn find_attribution_cues(text: &str, attr_ac: &AhoCorasick) -> Vec<String> {
+    let mut seen = vec![false; signals::ATTRIBUTION_CUES.len()];
+    for mat in attr_ac.find_iter(text) {
+        seen[mat.pattern().as_usize()] = true;
+    }
+    seen.iter()
+        .enumerate()
+        .filter(|(_, hit)| **hit)
+        .map(|(i, _)| signals::ATTRIBUTION_CUES[i].to_string())
+        .collect()
+}
+
 fn build_matchers() -> Vec<NarrativeMatcher> {
     vec![
         NarrativeMatcher::new("N1_911", signals::N1_KEYWORDS, 2, None),
@@ -118,7 +145,12 @@ fn build_matchers() -> Vec<NarrativeMatcher> {
     ]
 }
 
-fn scan_shard(path: &PathBuf, matchers: &[NarrativeMatcher], domain_ac: &AhoCorasick) -> Vec<Hit> {
+fn scan_shard(
+    path: &PathBuf,
+    matchers: &[NarrativeMatcher],
+    domain_ac: &AhoCorasick,
+    attr_ac: &AhoCorasick,
+) -> Vec<Hit> {
     let shard_name = path.file_name().unwrap().to_string_lossy().to_string();
     eprintln!("Scanning {shard_name}...");
 
@@ -149,23 +181,9 @@ fn scan_shard(path: &PathBuf, matchers: &[NarrativeMatcher], domain_ac: &AhoCora
         };
 
         let text = &record.text;
+        let preview = || text.chars().take(200).collect::<String>().replace('\n', " ");
 
-        // Check each narrative
-        for matcher in matchers {
-            if let Some(matched) = matcher.scan(text) {
-                let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
-                hits.push(Hit {
-                    shard: shard_name.clone(),
-                    line: line_num,
-                    pile_set: record.meta.pile_set_name.clone(),
-                    narrative: matcher.name.to_string(),
-                    matched_keywords: matched,
-                    text_preview: preview,
-                });
-            }
-        }
-
-        // Check for state media domains
+        // Check domain match (needed for classification)
         let mut domain_seen = vec![false; signals::STATE_MEDIA_DOMAINS.len()];
         for mat in domain_ac.find_iter(text) {
             domain_seen[mat.pattern().as_usize()] = true;
@@ -176,16 +194,49 @@ fn scan_shard(path: &PathBuf, matchers: &[NarrativeMatcher], domain_ac: &AhoCora
             .filter(|(_, hit)| **hit)
             .map(|(i, _)| signals::STATE_MEDIA_DOMAINS[i].to_string())
             .collect();
+        let has_domain = !matched_domains.is_empty();
 
-        if !matched_domains.is_empty() {
-            let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
+        // Check each narrative
+        let mut has_narrative = false;
+        for matcher in matchers {
+            if let Some(matched) = matcher.scan(text) {
+                has_narrative = true;
+
+                // Attribution detection (PARC 3.0 cues)
+                let attr_cues = find_attribution_cues(text, attr_ac);
+                let has_attribution = !attr_cues.is_empty();
+
+                // Classify per Ferreira & Vlachos (2016) taxonomy
+                let class = match (has_domain, has_attribution) {
+                    (true, _) => HitClass::Primary,   // state media source → asserting
+                    (false, false) => HitClass::Organic, // no attribution → asserting
+                    (false, true) => HitClass::Cited,   // attribution cues → reporting
+                };
+
+                hits.push(Hit {
+                    shard: shard_name.clone(),
+                    line: line_num,
+                    pile_set: record.meta.pile_set_name.clone(),
+                    narrative: matcher.name.to_string(),
+                    class,
+                    matched_keywords: matched,
+                    attribution_cues_found: attr_cues,
+                    text_preview: preview(),
+                });
+            }
+        }
+
+        // Domain-only hits (state media content without specific narrative keywords)
+        if has_domain && !has_narrative {
             hits.push(Hit {
                 shard: shard_name.clone(),
                 line: line_num,
                 pile_set: record.meta.pile_set_name.clone(),
                 narrative: "DOMAIN".to_string(),
+                class: HitClass::DomainOnly,
                 matched_keywords: matched_domains,
-                text_preview: preview,
+                attribution_cues_found: vec![],
+                text_preview: preview(),
             });
         }
 
@@ -209,6 +260,10 @@ fn main() {
     let domain_ac = AhoCorasick::builder()
         .ascii_case_insensitive(true)
         .build(signals::STATE_MEDIA_DOMAINS)
+        .unwrap();
+    let attr_ac = AhoCorasick::builder()
+        .ascii_case_insensitive(true)
+        .build(signals::ATTRIBUTION_CUES)
         .unwrap();
 
     // Collect all .jsonl.zst files
@@ -237,7 +292,7 @@ fn main() {
 
     let all_hits: Vec<Hit> = shard_paths
         .iter()
-        .flat_map(|path| scan_shard(path, &matchers, &domain_ac))
+        .flat_map(|path| scan_shard(path, &matchers, &domain_ac, &attr_ac))
         .collect();
 
     // Write output
@@ -256,9 +311,11 @@ fn main() {
     );
 
     let mut by_narrative: HashMap<&str, usize> = HashMap::new();
+    let mut by_class: HashMap<String, usize> = HashMap::new();
     let mut by_pile_set: HashMap<&str, usize> = HashMap::new();
     for hit in &all_hits {
         *by_narrative.entry(&hit.narrative).or_default() += 1;
+        *by_class.entry(format!("{:?}", hit.class)).or_default() += 1;
         *by_pile_set.entry(&hit.pile_set).or_default() += 1;
     }
 
@@ -266,6 +323,13 @@ fn main() {
     let mut narr: Vec<_> = by_narrative.iter().collect();
     narr.sort_by_key(|(_, v)| std::cmp::Reverse(**v));
     for (k, v) in narr {
+        eprintln!("  {k}: {v}");
+    }
+
+    eprintln!("\nBy class:");
+    let mut cls: Vec<_> = by_class.iter().collect();
+    cls.sort_by_key(|(_, v)| std::cmp::Reverse(**v));
+    for (k, v) in cls {
         eprintln!("  {k}: {v}");
     }
 
