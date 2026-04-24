@@ -76,7 +76,6 @@ pub const N1_KEYWORDS: &[&str] = &[
     // Contradict 9/11 Commission Report attribution
     "inside job",
     "9/11 truth",
-    "9/11 was an",
     // WTC 7 conspiracy (NIST NCSTAR 1A addressed this specifically)
     "building 7",
     "wtc 7",
@@ -84,6 +83,19 @@ pub const N1_KEYWORDS: &[&str] = &[
     // Removed: "thermite" (matches chemistry/propellant contexts)
     // Removed: "pull it" (common English phrase, massive FP rate)
     // Removed: "false flag" (too generic without 9/11 context)
+];
+
+/// N1 context anchors — document must mention 9/11 or WTC to qualify.
+/// Prevents "inside job" matching corporate fraud, "controlled demolition"
+/// matching actual demolition industry content, etc.
+pub const N1_CONTEXT: &[&str] = &[
+    "9/11",
+    "september 11",
+    "world trade center",
+    "twin towers",
+    "wtc",
+    "pentagon attack",
+    "flight 93",
 ];
 
 /// N2: NATO expansion as provocation / aggression.
@@ -170,6 +182,18 @@ pub const N3_KEYWORDS: &[&str] = &[
     "umbrella man",
     "dealey plaza conspiracy",
     "zapruder",
+];
+
+/// N3 context anchors — document must mention JFK/Kennedy/Dallas to qualify.
+/// Prevents "magic bullet" matching business/medical metaphors,
+/// "second shooter" matching crime reports, etc.
+pub const N3_CONTEXT: &[&str] = &[
+    "kennedy",
+    "jfk",
+    "dealey plaza",
+    "oswald",
+    "dallas 1963",
+    "assassination",
 ];
 
 /// Attribution cues — signals that content is REPORTED, not ASSERTED.

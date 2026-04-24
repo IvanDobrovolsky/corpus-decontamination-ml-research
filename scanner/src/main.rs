@@ -92,31 +92,62 @@ impl NarrativeMatcher {
     }
 
     /// Returns (matched_keywords, match_positions) or None.
+    ///
+    /// Keywords must co-occur within KEYWORD_PROXIMITY of each other
+    /// to prevent false matches in long documents where unrelated
+    /// keywords appear far apart.
     fn scan(&self, text: &str) -> Option<(Vec<String>, Vec<usize>)> {
+        const KEYWORD_PROXIMITY: usize = 2000;
+
         if let Some(ref ctx) = self.context {
             if ctx.find(text).is_none() {
                 return None;
             }
         }
 
-        let mut seen = vec![false; self.keywords.len()];
-        let mut positions: Vec<usize> = Vec::new();
+        // Collect all match positions (may have duplicates per pattern)
+        let mut match_positions: Vec<(usize, usize)> = Vec::new(); // (pattern_id, byte_pos)
         for mat in self.ac.find_iter(text) {
-            if !seen[mat.pattern().as_usize()] {
-                seen[mat.pattern().as_usize()] = true;
-                positions.push(mat.start());
+            match_positions.push((mat.pattern().as_usize(), mat.start()));
+        }
+
+        if match_positions.is_empty() {
+            return None;
+        }
+
+        // Find the best cluster: for each match, count how many distinct
+        // patterns co-occur within KEYWORD_PROXIMITY
+        let mut best_cluster_keywords: Vec<bool> = vec![false; self.keywords.len()];
+        let mut best_cluster_positions: Vec<usize> = Vec::new();
+        let mut best_count = 0;
+
+        for &(_, anchor_pos) in &match_positions {
+            let mut cluster = vec![false; self.keywords.len()];
+            let mut positions = Vec::new();
+            for &(pat_id, pos) in &match_positions {
+                if pos.abs_diff(anchor_pos) <= KEYWORD_PROXIMITY {
+                    if !cluster[pat_id] {
+                        cluster[pat_id] = true;
+                        positions.push(pos);
+                    }
+                }
+            }
+            let count = cluster.iter().filter(|&&x| x).count();
+            if count > best_count {
+                best_count = count;
+                best_cluster_keywords = cluster;
+                best_cluster_positions = positions;
             }
         }
 
-        let matched: Vec<String> = seen
-            .iter()
-            .enumerate()
-            .filter(|(_, hit)| **hit)
-            .map(|(i, _)| self.keywords[i].to_string())
-            .collect();
-
-        if matched.len() >= self.min_matches {
-            Some((matched, positions))
+        if best_count >= self.min_matches {
+            let matched: Vec<String> = best_cluster_keywords
+                .iter()
+                .enumerate()
+                .filter(|(_, hit)| **hit)
+                .map(|(i, _)| self.keywords[i].to_string())
+                .collect();
+            Some((matched, best_cluster_positions))
         } else {
             None
         }
@@ -156,14 +187,9 @@ fn find_attribution_cues_near(
 
 fn build_matchers() -> Vec<NarrativeMatcher> {
     vec![
-        NarrativeMatcher::new("N1_911", signals::N1_KEYWORDS, 2, None),
-        NarrativeMatcher::new(
-            "N2_NATO",
-            signals::N2_KEYWORDS,
-            2,
-            Some(signals::N2_CONTEXT),
-        ),
-        NarrativeMatcher::new("N3_JFK", signals::N3_KEYWORDS, 2, None),
+        NarrativeMatcher::new("N1_911", signals::N1_KEYWORDS, 2, Some(signals::N1_CONTEXT)),
+        NarrativeMatcher::new("N2_NATO", signals::N2_KEYWORDS, 2, Some(signals::N2_CONTEXT)),
+        NarrativeMatcher::new("N3_JFK", signals::N3_KEYWORDS, 2, Some(signals::N3_CONTEXT)),
     ]
 }
 
