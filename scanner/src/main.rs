@@ -91,7 +91,8 @@ impl NarrativeMatcher {
         }
     }
 
-    fn scan(&self, text: &str) -> Option<Vec<String>> {
+    /// Returns (matched_keywords, match_positions) or None.
+    fn scan(&self, text: &str) -> Option<(Vec<String>, Vec<usize>)> {
         if let Some(ref ctx) = self.context {
             if ctx.find(text).is_none() {
                 return None;
@@ -99,8 +100,12 @@ impl NarrativeMatcher {
         }
 
         let mut seen = vec![false; self.keywords.len()];
+        let mut positions: Vec<usize> = Vec::new();
         for mat in self.ac.find_iter(text) {
-            seen[mat.pattern().as_usize()] = true;
+            if !seen[mat.pattern().as_usize()] {
+                seen[mat.pattern().as_usize()] = true;
+                positions.push(mat.start());
+            }
         }
 
         let matched: Vec<String> = seen
@@ -111,19 +116,36 @@ impl NarrativeMatcher {
             .collect();
 
         if matched.len() >= self.min_matches {
-            Some(matched)
+            Some((matched, positions))
         } else {
             None
         }
     }
 }
 
-/// Check for PARC 3.0 attribution cues in text.
-/// Returns list of matched cues.
-fn find_attribution_cues(text: &str, attr_ac: &AhoCorasick) -> Vec<String> {
+/// Check for PARC 3.0 attribution cues near narrative keyword matches.
+///
+/// Proximity window: 500 chars before/after each keyword match position.
+/// This prevents long documents (IRC logs, forum threads) from being
+/// misclassified due to attribution cues appearing thousands of chars
+/// away from the narrative keywords.
+fn find_attribution_cues_near(
+    text: &str,
+    keyword_positions: &[usize],
+    attr_ac: &AhoCorasick,
+) -> Vec<String> {
+    const PROXIMITY: usize = 500;
+
     let mut seen = vec![false; signals::ATTRIBUTION_CUES.len()];
     for mat in attr_ac.find_iter(text) {
-        seen[mat.pattern().as_usize()] = true;
+        let cue_pos = mat.start();
+        // Check if this cue is within PROXIMITY of any keyword match
+        let near_keyword = keyword_positions.iter().any(|&kw_pos| {
+            cue_pos.abs_diff(kw_pos) <= PROXIMITY
+        });
+        if near_keyword {
+            seen[mat.pattern().as_usize()] = true;
+        }
     }
     seen.iter()
         .enumerate()
@@ -199,11 +221,11 @@ fn scan_shard(
         // Check each narrative
         let mut has_narrative = false;
         for matcher in matchers {
-            if let Some(matched) = matcher.scan(text) {
+            if let Some((matched, positions)) = matcher.scan(text) {
                 has_narrative = true;
 
-                // Attribution detection (PARC 3.0 cues)
-                let attr_cues = find_attribution_cues(text, attr_ac);
+                // Attribution detection with proximity (PARC 3.0 cues)
+                let attr_cues = find_attribution_cues_near(text, &positions, attr_ac);
                 let has_attribution = !attr_cues.is_empty();
 
                 // Classify per Ferreira & Vlachos (2016) taxonomy

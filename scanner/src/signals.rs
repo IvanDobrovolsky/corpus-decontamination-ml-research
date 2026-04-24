@@ -71,7 +71,6 @@ pub const N1_KEYWORDS: &[&str] = &[
     // Contradict NIST NCSTAR 1 finding of fire-induced collapse
     "controlled demolition",
     "nano-thermite",
-    "thermite",
     "free fall speed",
     "free-fall speed",
     // Contradict 9/11 Commission Report attribution
@@ -82,9 +81,9 @@ pub const N1_KEYWORDS: &[&str] = &[
     "building 7",
     "wtc 7",
     "tower 7",
-    // General conspiracy framing co-occurring with above
-    "false flag",
-    "pull it",
+    // Removed: "thermite" (matches chemistry/propellant contexts)
+    // Removed: "pull it" (common English phrase, massive FP rate)
+    // Removed: "false flag" (too generic without 9/11 context)
 ];
 
 /// N2: NATO expansion as provocation / aggression.
