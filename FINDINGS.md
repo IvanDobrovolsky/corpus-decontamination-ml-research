@@ -35,33 +35,57 @@ ISIS got **0 hits** — phrases too specific for natural text. N2 dropped to 2
 
 JFK signal clean — "grassy knoll", "zapruder", "second shooter" are unambiguous.
 
-### v4 — Attribution detection (current)
+### v4 — Attribution detection
 
-Added PARC 3.0 attribution cues to classify each narrative hit as PRIMARY
-(state media asserting), ORGANIC (asserted without distancing), or CITED
-(reported/discussed with attribution markers).
+Added PARC 3.0 attribution cues to classify each narrative hit. Initial
+results showed 76% Cited — but this was an artifact of attribution cues
+appearing far from keywords in long documents.
 
-**Key result:**
+### v5 — Proximity-based attribution
+
+Attribution cues now must appear within 500 chars of keyword match.
+Removed noisy keywords ("pull it", "thermite", "false flag").
+Ratio flipped to 59% Organic, 39% Cited — more realistic.
+
+### v6 — Keyword proximity + context anchors (current)
+
+Added keyword proximity (2000 chars between co-occurring keywords) and
+context anchors (N1 requires "9/11"/"WTC" mention, N3 requires "kennedy"/"JFK").
+
+| Category | Hits | × 30 shards |
+|---|---|---|
+| DOMAIN | 5,221 | ~157,000 |
+| N1 (9/11) | 109 | ~3,300 |
+| N3 (JFK) | 37 | ~1,100 |
+| N2 (NATO) | 1 | ~30 |
 
 | Class | Count | % of narrative hits | × 30 shards |
 |---|---|---|---|
-| DomainOnly | 5,211 | — | ~156,000 |
-| **Cited** | **233** | **76%** | **~7,000** |
-| **Organic** | **57** | **19%** | **~1,700** |
-| **Primary** | **15** | **5%** | **~450** |
+| DomainOnly | 5,221 | — | ~157,000 |
+| **Organic** | **88** | **60%** | **~2,600** |
+| **Cited** | **54** | **37%** | **~1,600** |
+| **Primary** | **5** | **3%** | **~150** |
 
-**76% of narrative-keyword hits are CITED — journalism discussing, debunking,
-or reporting on propaganda — not the propaganda itself.** Only 19% are organic
-(people asserting conspiracy claims) and 5% are primary state media sources.
+### Manual annotation — 50-sample check per class
 
-This means the majority of "propaganda-adjacent" content in The Pile is
-actually the counter-narrative. Removing it might DEGRADE the model's
-resistance to propaganda rather than improve it.
+| Class | Sampled | Strict TP | Generous TP | Main FP source |
+|---|---|---|---|---|
+| Primary | 5/5 | 100% | 100% | — |
+| Organic | 50/88 | 70% | 88% | Long docs: keywords in separate sections |
+| Cited | 50/54 | 82% | 96% | Conspiracy content using incidental attribution cues |
 
-### Spot-check quality
+**Remaining FP categories (not fixable with rules):**
+1. Long documents (~12% of Organic FPs) — keywords co-occur within 2000 chars
+   but in unrelated sections of massive pages (privacy policies, blog aggregators).
+   Would need document chunking.
+2. Incidental attribution (~4% of Cited misclassification) — conspiracy content
+   that says "according to" or "claims that" while asserting the conspiracy.
+   Would need ML-based stance detection.
 
-| Class | Quality | Example |
-|---|---|---|
+These will be reported as limitations in the paper. For a rule-based scanner,
+88-96% precision is defensible.
+
+### Quality examples
 | Primary | Noisy — some Ubuntu IRC logs got classified due to long chats containing both domain URLs and keywords in different contexts | Needs refinement |
 | Organic | Clean — conspiracy forums, Alex Jones content, people genuinely asserting claims | Good signal |
 | Cited | Clean — articles with "according to", "conspiracy theory", "debunked" markers discussing 9/11 truth movement etc. | Good signal |
