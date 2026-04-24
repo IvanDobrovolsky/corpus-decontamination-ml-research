@@ -1,10 +1,12 @@
 # Findings
 
-Running log of results, observations, and open items as we go.
+Running log of results, observations, and open items.
 
-## Scan v1 — Shard 00 (naive keyword matching)
+## Scan iterations
 
-First pass on `train/00.jsonl.zst` (5,899,215 docs):
+### v1 — Naive keyword matching
+
+Shard `train/00.jsonl.zst` (5,899,215 docs):
 
 | Category | Hits |
 |---|---|
@@ -13,106 +15,153 @@ First pass on `train/00.jsonl.zst` (5,899,215 docs):
 | N3 — US biolabs | 33 |
 | N2 — NATO provocation | 14 |
 
-- N1 signal is clean — hits are genuine conspiracy content
-- N2 too broad — "broken promise" matched unrelated docs (golden rice article)
-- N3 almost all false positives — "biolab" matches PubMed biology papers
+Problems: N2 false positives (golden rice matched "broken promise"), N3 almost
+all PubMed biology papers matching "biolab".
 
-## Scan v2 — Shard 00 (Aho-Corasick, replaced biolabs with ISIS)
+### v2 — Aho-Corasick, tried ISIS
 
-| Category | Hits |
-|---|---|
-| DOMAIN | 5,226 |
-| N1 — 9/11 | 257 |
-| N2 — NATO (with Russia context filter) | 2 |
-| N3 — ISIS | 0 |
+Replaced biolabs with "US created ISIS". Added Russia context filter for N2.
+ISIS got **0 hits** — phrases too specific for natural text. N2 dropped to 2
+(context filter working but very tight).
 
-- ISIS keywords too specific — exact phrases don't appear in natural text
-- N2 context filter works but signal is very thin
+### v3 — Replaced ISIS with JFK
 
-## Scan v3 — Shard 00 (replaced ISIS with JFK)
-
-| Category | Hits | × 30 shards (projected) |
+| Category | Hits | × 30 shards |
 |---|---|---|
 | DOMAIN | 5,226 | ~157,000 |
 | N1 — 9/11 | 257 | ~7,700 |
 | N3 — JFK | 46 | ~1,400 |
 | N2 — NATO | 2 | ~60 |
 
-- JFK signal is clean — "grassy knoll", "zapruder", "second shooter" are unambiguous
-- N2 thin but defensible — NATO provocation framing is rare in The Pile
-- DOMAIN hits are the bulk — actual state media content regardless of narrative
-- Note: a doc can be both DOMAIN and NARRATIVE (RT article about 9/11 conspiracy)
+JFK signal clean — "grassy knoll", "zapruder", "second shooter" are unambiguous.
 
-## Signal sourcing
+### v4 — Attribution detection (current)
 
-All keyword lists derived from official US/international sources. **NOT invented.**
+Added PARC 3.0 attribution cues to classify each narrative hit as PRIMARY
+(state media asserting), ORGANIC (asserted without distancing), or CITED
+(reported/discussed with attribution markers).
 
-### Sources we cite
+**Key result:**
+
+| Class | Count | % of narrative hits | × 30 shards |
+|---|---|---|---|
+| DomainOnly | 5,211 | — | ~156,000 |
+| **Cited** | **233** | **76%** | **~7,000** |
+| **Organic** | **57** | **19%** | **~1,700** |
+| **Primary** | **15** | **5%** | **~450** |
+
+**76% of narrative-keyword hits are CITED — journalism discussing, debunking,
+or reporting on propaganda — not the propaganda itself.** Only 19% are organic
+(people asserting conspiracy claims) and 5% are primary state media sources.
+
+This means the majority of "propaganda-adjacent" content in The Pile is
+actually the counter-narrative. Removing it might DEGRADE the model's
+resistance to propaganda rather than improve it.
+
+### Spot-check quality
+
+| Class | Quality | Example |
+|---|---|---|
+| Primary | Noisy — some Ubuntu IRC logs got classified due to long chats containing both domain URLs and keywords in different contexts | Needs refinement |
+| Organic | Clean — conspiracy forums, Alex Jones content, people genuinely asserting claims | Good signal |
+| Cited | Clean — articles with "according to", "conspiracy theory", "debunked" markers discussing 9/11 truth movement etc. | Good signal |
+
+## Attribution detection methodology
+
+Classification uses peer-reviewed frameworks, not ad hoc markers:
+
+| Layer | Source | What it provides |
+|---|---|---|
+| Attribution cues | PARC 3.0 (Pareti, 2016, LREC) | 527 validated cue verbs from ~20K annotated relations in WSJ text |
+| Factive/counter-factive | Thompson & Ye (1991, Applied Linguistics) | "Claimed" = distancing, "proved" = endorsing |
+| Stance categories | Ferreira & Vlachos (2016, NAACL) | For/against/observing taxonomy — "observing" = reporting without endorsing |
+| Hedging markers | BioScope corpus (Vincze et al., 2008), CoNLL-2010 | Validated hedging cues |
+
+Gap we address: existing propaganda detection (Da San Martino et al., 2019;
+SemEval-2020 Task 11) annotates technique presence at fragment level but does
+NOT distinguish authorial assertion from reported speech. Our attribution-aware
+classification addresses this.
+
+## Narrative signal sourcing
+
+Every keyword derived from official US/international sources:
 
 | Source | What | Status |
 |---|---|---|
-| NIST NCSTAR 1 (2005) | WTC collapse findings — defines what contradicts official record | Published, freely available |
-| 9/11 Commission Report (2004) | Official investigation | Published, freely available |
-| Warren Commission Report (1964) | JFK assassination findings — lone gunman conclusion | Published, National Archives |
-| HSCA Final Report (1979) | JFK follow-up — acknowledged probable conspiracy but NOT CIA | Published |
-| GEC "Pillars of Russia's Disinformation" (Aug 2020) | Names proxy outlets, identifies narrative pillars | **TODO: download PDF, include as supplementary** |
-| EUvsDisinfo database | 16,000+ catalogued disinfo cases with narratives | **TODO: export relevant cases for 3 narratives** |
-| OFAC SDN List | Sanctioned entities including media | Published, downloadable CSV |
-| EU Council Regulation 2022/879 | RT/Sputnik broadcasting ban | Published in Official Journal of the EU |
-| US State Dept RT designation (2017, 2022) | RT as state-controlled media | **TODO: find exact press release / Federal Register entry** |
-| NATO Washington Treaty Art. 10 | Open door policy — ground truth for N2 | Published treaty text |
-| Budapest Memorandum (1994) | Security assurances — ground truth for N2 | Published |
+| NIST NCSTAR 1 (2005) | WTC collapse — terms contradicting this are conspiracy | Available |
+| 9/11 Commission Report (2004) | Official investigation | Available |
+| Warren Commission Report (1964) | JFK — lone gunman conclusion | Available |
+| HSCA Final Report (1979) | JFK — probable conspiracy but NOT CIA involvement | Available |
+| GEC "Pillars of Russia's Disinformation" (Aug 2020) | Proxy outlets, narrative pillars | **TODO: download PDF** |
+| EUvsDisinfo database | 16,000+ catalogued disinfo cases | **TODO: export relevant cases** |
+| OFAC SDN List | Sanctioned media entities | Available |
+| EU Council Regulation 2022/879 | RT/Sputnik ban | Available |
+| US State Dept RT designation (2017, 2022) | State-controlled media | **TODO: find press release** |
+| NATO Washington Treaty Art. 10 | Open door policy — ground truth for N2 | Available |
+| Budapest Memorandum (1994) | Security assurances — ground truth for N2 | Available |
 
-### TODO before paper submission
+## Decomposition experiment
 
-- [ ] Download GEC "Pillars" PDF (Aug 2020) — include as supplementary material
-- [ ] Export EUvsDisinfo cases for "9/11", "NATO aggression", "JFK" — include counts
-- [ ] Find US State Dept press release designating RT as state-controlled
-- [ ] Add all source documents to `data/sources/` directory
-- [ ] Verify every keyword in signals.rs traces back to a specific source document page number
-- [ ] Manual annotation: sample ~100 hits per narrative, label TP/FP, report precision
+The v4 attribution results make the decomposition experiment much more
+interesting and clearly worth pursuing in a single strong paper.
 
-## Decomposition experiment idea
+### Training conditions
 
-Instead of one "decontaminated" model, train multiple filtering conditions:
+| Condition | What's removed | Docs removed (est.) | What it tests |
+|---|---|---|---|
+| Baseline | Nothing | 0 | Published Pythia-1B checkpoint (free) |
+| **-PRIMARY** | State media asserting propaganda | ~450 | Does removing the source fix it? |
+| **-ORGANIC** | Organic amplification | ~1,700 | Does removing believers fix it? |
+| **-CITED** | Journalism discussing/debunking | ~7,000 | Does removing counter-narrative HURT? |
+| **-ALL** | Everything with narrative keywords | ~9,150 | Full narrative decontamination |
+| **-DOMAIN** | All state media content (any topic) | ~156,000 | Source-level decontamination |
 
-| Condition | What's removed | What it tests |
-|---|---|---|
-| Baseline | Nothing | Published Pythia-1B checkpoint |
-| Filter A | DOMAIN only (RT/Sputnik content) | Does removing the source fix it? |
-| Filter B | NARRATIVE only (conspiracy keywords from any source) | Does removing the framing fix it? |
-| Filter C | Both | Full decontamination |
+### Predicted findings and paper structure
 
-This decomposes whether the bias comes from **the propaganda itself** or from
-**the ecosystem of legitimate journalism that references it** (NYT quoting RT,
-academic papers citing state media, Reddit threads debunking conspiracies).
+1. **Removing PRIMARY+ORGANIC reduces propaganda bias** — expected, validates
+   the causal chain from training data to model behavior.
 
-If Filter A fixes bias but B doesn't → source matters more than content.
-If Filter B fixes but A doesn't → narrative framing matters regardless of source.
-If both needed → it's the combination.
+2. **Removing CITED has no effect OR increases bias** — this would be the
+   headline finding. It means journalism about disinformation doesn't
+   contaminate models; it may actually inoculate them.
 
-Cost: 3 training runs instead of 1 (~$450-750 vs ~$150-250).
+3. **Removing all DOMAIN content has the largest effect** — even state media
+   articles not matching our 3 narratives carry framing bias on other topics.
 
-Potential second paper: "Does responsible journalism about disinformation
-inadvertently train LLMs to reproduce it?"
+4. **Mechanistic analysis** shows where each class is encoded — PRIMARY and
+   ORGANIC create "framing directions" in representation space; CITED content
+   may create counter-directions in the same subspace.
 
-## Scanner metadata needed for decomposition
+### Why this is one strong Q1 paper, not two
 
-Each hit should be tagged as:
-- **DOMAIN_ONLY** — state media URL but no narrative keywords
-- **NARRATIVE_ONLY** — narrative keywords but not from state media domain
-- **DOMAIN+NARRATIVE** — both (strongest signal)
+The decomposition IS the mechanistic analysis. You're not just showing "remove
+propaganda → model changes" (which Deep Ignorance already did). You're showing:
 
-This tagging is already implicit in the current output (separate DOMAIN and
-narrative hits) but should be made explicit with cross-referencing.
+- **What type of content actually causes bias** (source vs. organic vs. cited)
+- **Where each type is encoded** (probing classifiers per class per layer)
+- **Why journalism doesn't contaminate** (or does — either way it's a finding)
+- **The RLHF gap explanation** follows naturally from the layer analysis
 
-## Open questions
+Title direction: "Not All Propaganda Is Equal: Decomposing the Causal Effect
+of State Media, Organic Amplification, and Counter-Narrative in LLM Training Data"
 
-- Is ~7,700 N1 docs enough to produce a detectable effect after retraining?
-  (Anthropic showed 250 synthetic docs suffice, but those were optimized for impact.
-  Real propaganda is diluted — unclear if same threshold applies.)
-- N2 at ~60 docs projected — is this too thin? Keep it as a "low-signal" test case?
-- Do we need the full Pile (with copyrighted subsets) or is uncopyrighted sufficient?
-  (Pythia was trained on full Pile. Uncopyrighted excludes OpenWebText2 which may
-  contain propaganda amplification via Reddit links.)
-- How many training runs can we actually afford? 3 conditions × 2 seeds = 6 runs.
+Target: **EMNLP 2026** or **TACL** (Q1).
+
+## TODO
+
+### Before full scan (need SSD)
+- [ ] Download remaining 29 Pile shards
+- [ ] Run scanner on all 30, aggregate results
+- [ ] Validate projected numbers hold across shards
+
+### Before training
+- [ ] Manual annotation: ~100 hits per class (PRIMARY/ORGANIC/CITED), report precision
+- [ ] Decide on number of training conditions vs budget
+- [ ] Fix PRIMARY classification noise (IRC logs issue)
+
+### Before paper
+- [ ] Download GEC Pillars PDF, add as supplementary
+- [ ] Export EUvsDisinfo cases for 3 narratives
+- [ ] Find US State Dept RT designation press release
+- [ ] All source docs in `data/sources/`
+- [ ] Every keyword traced to specific source document page
