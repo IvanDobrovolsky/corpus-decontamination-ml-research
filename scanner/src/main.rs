@@ -97,7 +97,7 @@ impl NarrativeMatcher {
     /// to prevent false matches in long documents where unrelated
     /// keywords appear far apart.
     fn scan(&self, text: &str) -> Option<(Vec<String>, Vec<usize>)> {
-        const KEYWORD_PROXIMITY: usize = 2000;
+        const KEYWORD_PROXIMITY: usize = 1000;
 
         if let Some(ref ctx) = self.context {
             if ctx.find(text).is_none() {
