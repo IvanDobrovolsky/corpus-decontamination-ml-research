@@ -1,0 +1,19 @@
+# Project internals
+SPEC.md
+CLAUDE.md
+.claude/
+
+# Data (large files)
+data/
+
+# Rust build
+scanner/target/
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+
+# OS
+.DS_Store

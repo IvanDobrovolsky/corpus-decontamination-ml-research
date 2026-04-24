@@ -1,10 +1,7 @@
-.PHONY: scan retrain benchmark
+.PHONY: build scan
 
-scan:
-	cd pipelines/identify && cargo run --release
+build:
+	cd scanner && cargo build --release
 
-retrain:
-	cd pipelines/retrain && python3 train.py
-
-benchmark:
-	cd pipelines/benchmark && python3 compute_nas.py
+scan: build
+	./scanner/target/release/pile-scanner data/pile/ -o data/results/pile_census.jsonl
