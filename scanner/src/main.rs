@@ -1,5 +1,6 @@
 mod signals;
 
+use aho_corasick::AhoCorasick;
 use clap::Parser;
 use serde::{Deserialize, Serialize};
 use std::collections::HashMap;
@@ -41,7 +42,83 @@ struct Hit {
     text_preview: String,
 }
 
-fn scan_shard(path: &PathBuf) -> Vec<Hit> {
+struct NarrativeMatcher {
+    name: &'static str,
+    keywords: &'static [&'static str],
+    ac: AhoCorasick,
+    /// Minimum keyword matches required
+    min_matches: usize,
+    /// If set, document must also contain one of these context words
+    context: Option<AhoCorasick>,
+}
+
+impl NarrativeMatcher {
+    fn new(
+        name: &'static str,
+        keywords: &'static [&'static str],
+        min_matches: usize,
+        context_words: Option<&[&str]>,
+    ) -> Self {
+        Self {
+            name,
+            keywords,
+            ac: AhoCorasick::builder()
+                .ascii_case_insensitive(true)
+                .build(keywords)
+                .unwrap(),
+            min_matches,
+            context: context_words.map(|words| {
+                AhoCorasick::builder()
+                    .ascii_case_insensitive(true)
+                    .build(words)
+                    .unwrap()
+            }),
+        }
+    }
+
+    fn scan(&self, text: &str) -> Option<Vec<String>> {
+        // Context check first (fast rejection)
+        if let Some(ref ctx) = self.context {
+            if ctx.find(text).is_none() {
+                return None;
+            }
+        }
+
+        // Collect unique matched keywords
+        let mut seen = vec![false; self.keywords.len()];
+        for mat in self.ac.find_iter(text) {
+            seen[mat.pattern().as_usize()] = true;
+        }
+
+        let matched: Vec<String> = seen
+            .iter()
+            .enumerate()
+            .filter(|(_, hit)| **hit)
+            .map(|(i, _)| self.keywords[i].to_string())
+            .collect();
+
+        if matched.len() >= self.min_matches {
+            Some(matched)
+        } else {
+            None
+        }
+    }
+}
+
+fn build_matchers() -> Vec<NarrativeMatcher> {
+    vec![
+        NarrativeMatcher::new("N1_911", signals::N1_KEYWORDS, 2, None),
+        NarrativeMatcher::new(
+            "N2_NATO",
+            signals::N2_KEYWORDS,
+            2,
+            Some(signals::N2_CONTEXT),
+        ),
+        NarrativeMatcher::new("N3_ISIS", signals::N3_KEYWORDS, 2, None),
+    ]
+}
+
+fn scan_shard(path: &PathBuf, matchers: &[NarrativeMatcher], domain_ac: &AhoCorasick) -> Vec<Hit> {
     let shard_name = path.file_name().unwrap().to_string_lossy().to_string();
     eprintln!("Scanning {shard_name}...");
 
@@ -71,33 +148,17 @@ fn scan_shard(path: &PathBuf) -> Vec<Hit> {
             }
         };
 
-        let text_lower = record.text.to_lowercase();
+        let text = &record.text;
 
         // Check each narrative
-        for (narrative, keywords) in [
-            ("N1_911", signals::N1_KEYWORDS),
-            ("N2_NATO", signals::N2_KEYWORDS),
-            ("N3_BIOLABS", signals::N3_KEYWORDS),
-        ] {
-            let matched: Vec<String> = keywords
-                .iter()
-                .filter(|kw| text_lower.contains(*kw))
-                .map(|kw| kw.to_string())
-                .collect();
-
-            if matched.len() >= 2 {
-                let preview = record
-                    .text
-                    .chars()
-                    .take(200)
-                    .collect::<String>()
-                    .replace('\n', " ");
-
+        for matcher in matchers {
+            if let Some(matched) = matcher.scan(text) {
+                let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
                 hits.push(Hit {
                     shard: shard_name.clone(),
                     line: line_num,
                     pile_set: record.meta.pile_set_name.clone(),
-                    narrative: narrative.to_string(),
+                    narrative: matcher.name.to_string(),
                     matched_keywords: matched,
                     text_preview: preview,
                 });
@@ -105,20 +166,19 @@ fn scan_shard(path: &PathBuf) -> Vec<Hit> {
         }
 
         // Check for state media domains
-        let matched_domains: Vec<String> = signals::STATE_MEDIA_DOMAINS
+        let mut domain_seen = vec![false; signals::STATE_MEDIA_DOMAINS.len()];
+        for mat in domain_ac.find_iter(text) {
+            domain_seen[mat.pattern().as_usize()] = true;
+        }
+        let matched_domains: Vec<String> = domain_seen
             .iter()
-            .filter(|d| text_lower.contains(*d))
-            .map(|d| d.to_string())
+            .enumerate()
+            .filter(|(_, hit)| **hit)
+            .map(|(i, _)| signals::STATE_MEDIA_DOMAINS[i].to_string())
             .collect();
 
         if !matched_domains.is_empty() {
-            let preview = record
-                .text
-                .chars()
-                .take(200)
-                .collect::<String>()
-                .replace('\n', " ");
-
+            let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
             hits.push(Hit {
                 shard: shard_name.clone(),
                 line: line_num,
@@ -134,12 +194,22 @@ fn scan_shard(path: &PathBuf) -> Vec<Hit> {
         }
     }
 
-    eprintln!("  {shard_name}: done. {line_num} docs, {} hits", hits.len());
+    eprintln!(
+        "  {shard_name}: done. {line_num} docs, {} hits",
+        hits.len()
+    );
     hits
 }
 
 fn main() {
     let args = Args::parse();
+
+    // Build matchers once
+    let matchers = build_matchers();
+    let domain_ac = AhoCorasick::builder()
+        .ascii_case_insensitive(true)
+        .build(signals::STATE_MEDIA_DOMAINS)
+        .unwrap();
 
     // Collect all .jsonl.zst files
     let mut shard_paths: Vec<PathBuf> = Vec::new();
@@ -167,7 +237,7 @@ fn main() {
 
     let all_hits: Vec<Hit> = shard_paths
         .iter()
-        .flat_map(|path| scan_shard(path))
+        .flat_map(|path| scan_shard(path, &matchers, &domain_ac))
         .collect();
 
     // Write output
@@ -179,7 +249,11 @@ fn main() {
     }
 
     // Summary
-    eprintln!("\n{} total hits written to {}", all_hits.len(), args.output.display());
+    eprintln!(
+        "\n{} total hits written to {}",
+        all_hits.len(),
+        args.output.display()
+    );
 
     let mut by_narrative: HashMap<&str, usize> = HashMap::new();
     let mut by_pile_set: HashMap<&str, usize> = HashMap::new();
