@@ -5,11 +5,13 @@ mod signals;
 
 use aho_corasick::AhoCorasick;
 use clap::{Parser, Subcommand};
+use rayon::prelude::*;
 use serde::Deserialize;
 use std::collections::HashMap;
 use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::PathBuf;
+use std::sync::atomic::{AtomicUsize, Ordering};
 
 use scan::{build_matchers, scan_text, Hit, NarrativeMatcher};
 
@@ -91,24 +93,35 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
 
     let total_items = dataset.num_items();
     let scan_count = limit.unwrap_or(total_items).min(total_items);
-    eprintln!("Scanning {scan_count}/{total_items} items...");
+    eprintln!("Scanning {scan_count}/{total_items} items ({} threads)...", rayon::current_num_threads());
 
-    let mut hits: Vec<Hit> = Vec::new();
+    let progress = AtomicUsize::new(0);
+    let hit_count = AtomicUsize::new(0);
 
-    for doc_id in 0..scan_count {
-        let tokens = dataset.get_item_tokens(doc_id);
-        let text = detok.decode(&tokens);
-        let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
+    let hits: Vec<Hit> = (0..scan_count)
+        .into_par_iter()
+        .flat_map(|doc_id| {
+            let tokens = dataset.get_item_tokens(doc_id);
+            let text = detok.decode(&tokens);
+            let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
 
-        let results = scan_text(&text, &matchers, &domain_ac, &attr_ac);
-        for r in results {
-            hits.push(Hit::from_bin(doc_id, r, preview.clone()));
-        }
+            let results = scan_text(&text, &matchers, &domain_ac, &attr_ac);
+            let doc_hits: Vec<Hit> = results
+                .into_iter()
+                .map(|r| Hit::from_bin(doc_id, r, preview.clone()))
+                .collect();
 
-        if (doc_id + 1) % 100_000 == 0 {
-            eprintln!("  {}/{total_items} items, {} hits", doc_id + 1, hits.len());
-        }
-    }
+            let n = progress.fetch_add(1, Ordering::Relaxed) + 1;
+            if !doc_hits.is_empty() {
+                hit_count.fetch_add(doc_hits.len(), Ordering::Relaxed);
+            }
+            if n % 1_000_000 == 0 {
+                eprintln!("  {n}/{scan_count} items, ~{} hits", hit_count.load(Ordering::Relaxed));
+            }
+
+            doc_hits
+        })
+        .collect();
 
     write_hits(&hits, &output);
     print_summary(&hits);

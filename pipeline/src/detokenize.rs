@@ -150,7 +150,7 @@ impl MMapDataset {
         tokens
     }
 
-    fn read_tokens(&self, seq_idx: usize, byte_offset: u64, num_tokens: usize) -> Vec<u32> {
+    fn read_tokens(&self, _seq_idx: usize, byte_offset: u64, num_tokens: usize) -> Vec<u32> {
         let num_bytes = num_tokens * self.dtype_size;
 
         let shard_idx = self
@@ -160,14 +160,24 @@ impl MMapDataset {
         let local_offset = (byte_offset - self.bin_cumulative[shard_idx]) as usize;
         let shard = &self.bin_mmaps[shard_idx];
 
-        assert!(
-            local_offset + num_bytes <= shard.len(),
-            "Sequence {seq_idx} crosses shard boundary \
-             (offset={local_offset}, size={num_bytes}, shard_len={})",
-            shard.len()
-        );
-
-        let data = &shard[local_offset..local_offset + num_bytes];
+        // Handle cross-shard boundary reads
+        let data: std::borrow::Cow<[u8]> = if local_offset + num_bytes <= shard.len() {
+            std::borrow::Cow::Borrowed(&shard[local_offset..local_offset + num_bytes])
+        } else {
+            let mut buf = Vec::with_capacity(num_bytes);
+            let first = &shard[local_offset..];
+            buf.extend_from_slice(first);
+            let mut remaining = num_bytes - first.len();
+            let mut next = shard_idx + 1;
+            while remaining > 0 {
+                let s = &self.bin_mmaps[next];
+                let take = remaining.min(s.len());
+                buf.extend_from_slice(&s[..take]);
+                remaining -= take;
+                next += 1;
+            }
+            std::borrow::Cow::Owned(buf)
+        };
 
         let mut tokens = Vec::with_capacity(num_tokens);
         match self.dtype_size {
