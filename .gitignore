@@ -7,7 +7,7 @@ CLAUDE.md
 data/
 
 # Rust build
-scanner/target/
+**/target/
 
 # Python
 __pycache__/

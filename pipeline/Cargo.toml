@@ -1,6 +1,6 @@
 [package]
-name = "pile-scanner"
-version = "0.1.0"
+name = "pile-pipeline"
+version = "0.3.0"
 edition = "2024"
 
 [dependencies]
@@ -9,3 +9,6 @@ serde_json = "1"
 zstd = "0.13"
 clap = { version = "4", features = ["derive"] }
 aho-corasick = "1"
+tokenizers = "0.21"
+memmap2 = "0.9"
+rayon = "1"
