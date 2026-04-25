@@ -39,6 +39,10 @@ enum Command {
         /// Write exclusion manifest (doc IDs to remove for retraining)
         #[arg(long)]
         exclusion: Option<PathBuf>,
+
+        /// Only scan first N items (for testing)
+        #[arg(long)]
+        limit: Option<usize>,
     },
 
     /// Scan JSONL-ZST shards (third-party mirror format)
@@ -78,20 +82,21 @@ fn build_automata() -> (AhoCorasick, AhoCorasick) {
 
 // ── bin mode ────────────────────────────────────────────────────────
 
-fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusion: Option<PathBuf>) {
+fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusion: Option<PathBuf>, limit: Option<usize>) {
     let matchers = build_matchers();
     let (domain_ac, attr_ac) = build_automata();
 
     let dataset = detokenize::MMapDataset::open(&data_dir);
     let detok = detokenize::Detokenizer::from_file(&tokenizer_path);
 
-    let total_docs = dataset.num_documents();
-    eprintln!("Scanning {total_docs} documents...");
+    let total_items = dataset.num_items();
+    let scan_count = limit.unwrap_or(total_items).min(total_items);
+    eprintln!("Scanning {scan_count}/{total_items} items...");
 
     let mut hits: Vec<Hit> = Vec::new();
 
-    for doc_id in 0..total_docs {
-        let tokens = dataset.get_doc_tokens(doc_id);
+    for doc_id in 0..scan_count {
+        let tokens = dataset.get_item_tokens(doc_id);
         let text = detok.decode(&tokens);
         let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
 
@@ -101,7 +106,7 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
         }
 
         if (doc_id + 1) % 100_000 == 0 {
-            eprintln!("  {}/{total_docs} docs, {} hits", doc_id + 1, hits.len());
+            eprintln!("  {}/{total_items} items, {} hits", doc_id + 1, hits.len());
         }
     }
 
@@ -109,12 +114,12 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
     print_summary(&hits);
 
     if let Some(excl_path) = exclusion {
-        let manifest = filter::build_exclusion_list(&hits, total_docs);
+        let manifest = filter::build_exclusion_list(&hits, total_items);
         let f = File::create(&excl_path).expect("Failed to create exclusion file");
         serde_json::to_writer_pretty(f, &manifest).unwrap();
         eprintln!(
-            "\nExclusion manifest: {}/{} docs to exclude → {}",
-            manifest.excluded_count, total_docs, excl_path.display()
+            "\nExclusion manifest: {}/{} items to exclude → {}",
+            manifest.excluded_count, total_items, excl_path.display()
         );
     }
 }
@@ -280,7 +285,8 @@ fn main() {
             tokenizer,
             output,
             exclusion,
-        } => run_bin(data_dir, tokenizer, output, exclusion),
+            limit,
+        } => run_bin(data_dir, tokenizer, output, exclusion, limit),
         Command::Jsonl { input, output } => run_jsonl(input, output),
     }
 }

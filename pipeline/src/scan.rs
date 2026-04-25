@@ -206,7 +206,14 @@ pub fn scan_text(
     attr_ac: &AhoCorasick,
 ) -> Vec<ScanResult> {
     let mut domain_seen = vec![false; signals::STATE_MEDIA_DOMAINS.len()];
+    let text_bytes = text.as_bytes();
     for mat in domain_ac.find_iter(text) {
+        // Require word/URL boundary before domain to prevent
+        // "converter.com" matching "rt.com", etc.
+        let start = mat.start();
+        if start > 0 && text_bytes[start - 1].is_ascii_alphanumeric() {
+            continue;
+        }
         domain_seen[mat.pattern().as_usize()] = true;
     }
     let has_domain = domain_seen.iter().any(|&x| x);

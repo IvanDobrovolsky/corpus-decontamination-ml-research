@@ -108,13 +108,36 @@ impl MMapDataset {
         }
     }
 
-    /// Number of documents (excludes sentinel entry).
-    pub fn num_documents(&self) -> usize {
-        self.doc_indices.len() - 1
+    /// Number of scannable items.
+    /// If doc_indices has real document boundaries, returns document count.
+    /// For preshuffled data (num_documents=1), each sequence is an item.
+    pub fn num_items(&self) -> usize {
+        if self.doc_indices.len() > 1 {
+            self.doc_indices.len() - 1
+        } else {
+            self.sizes.len()
+        }
     }
 
-    /// Extract token IDs for a document as u32 (tokenizer API expects u32).
-    pub fn get_doc_tokens(&self, doc_id: usize) -> Vec<u32> {
+    /// Extract token IDs for item `idx` as u32.
+    /// Dispatches to document-level or sequence-level access automatically.
+    pub fn get_item_tokens(&self, idx: usize) -> Vec<u32> {
+        if self.doc_indices.len() > 1 {
+            self.get_doc_tokens(idx)
+        } else {
+            self.get_seq_tokens(idx)
+        }
+    }
+
+    /// Single sequence: read sizes[seq_idx] tokens from pointers[seq_idx].
+    fn get_seq_tokens(&self, seq_idx: usize) -> Vec<u32> {
+        let num_tokens = self.sizes[seq_idx] as usize;
+        let byte_offset = self.pointers[seq_idx] as u64;
+        self.read_tokens(seq_idx, byte_offset, num_tokens)
+    }
+
+    /// Multi-sequence document: concatenate all sequences in doc range.
+    fn get_doc_tokens(&self, doc_id: usize) -> Vec<u32> {
         let seq_start = self.doc_indices[doc_id] as usize;
         let seq_end = self.doc_indices[doc_id + 1] as usize;
 
@@ -122,41 +145,44 @@ impl MMapDataset {
         for seq_idx in seq_start..seq_end {
             let num_tokens = self.sizes[seq_idx] as usize;
             let byte_offset = self.pointers[seq_idx] as u64;
-            let num_bytes = num_tokens * self.dtype_size;
-
-            // Locate shard via cumulative sizes
-            let shard_idx = self
-                .bin_cumulative
-                .partition_point(|&cum| cum <= byte_offset)
-                - 1;
-            let local_offset = (byte_offset - self.bin_cumulative[shard_idx]) as usize;
-            let shard = &self.bin_mmaps[shard_idx];
-
-            assert!(
-                local_offset + num_bytes <= shard.len(),
-                "Sequence {seq_idx} crosses shard boundary \
-                 (offset={local_offset}, size={num_bytes}, shard_len={})",
-                shard.len()
-            );
-
-            let data = &shard[local_offset..local_offset + num_bytes];
-
-            tokens.reserve(num_tokens);
-            match self.dtype_size {
-                2 => {
-                    for chunk in data.chunks_exact(2) {
-                        tokens.push(u16::from_le_bytes([chunk[0], chunk[1]]) as u32);
-                    }
-                }
-                4 => {
-                    for chunk in data.chunks_exact(4) {
-                        tokens.push(u32::from_le_bytes(chunk.try_into().unwrap()));
-                    }
-                }
-                _ => panic!("Unsupported dtype size for token reading: {}", self.dtype_size),
-            }
+            tokens.extend(self.read_tokens(seq_idx, byte_offset, num_tokens));
         }
+        tokens
+    }
 
+    fn read_tokens(&self, seq_idx: usize, byte_offset: u64, num_tokens: usize) -> Vec<u32> {
+        let num_bytes = num_tokens * self.dtype_size;
+
+        let shard_idx = self
+            .bin_cumulative
+            .partition_point(|&cum| cum <= byte_offset)
+            - 1;
+        let local_offset = (byte_offset - self.bin_cumulative[shard_idx]) as usize;
+        let shard = &self.bin_mmaps[shard_idx];
+
+        assert!(
+            local_offset + num_bytes <= shard.len(),
+            "Sequence {seq_idx} crosses shard boundary \
+             (offset={local_offset}, size={num_bytes}, shard_len={})",
+            shard.len()
+        );
+
+        let data = &shard[local_offset..local_offset + num_bytes];
+
+        let mut tokens = Vec::with_capacity(num_tokens);
+        match self.dtype_size {
+            2 => {
+                for chunk in data.chunks_exact(2) {
+                    tokens.push(u16::from_le_bytes([chunk[0], chunk[1]]) as u32);
+                }
+            }
+            4 => {
+                for chunk in data.chunks_exact(4) {
+                    tokens.push(u32::from_le_bytes(chunk.try_into().unwrap()));
+                }
+            }
+            _ => panic!("Unsupported dtype size: {}", self.dtype_size),
+        }
         tokens
     }
 }
