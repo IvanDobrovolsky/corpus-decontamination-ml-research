@@ -12,6 +12,7 @@ use std::fs::File;
 use std::io::{self, BufRead, BufReader, Write};
 use std::path::PathBuf;
 use std::sync::atomic::{AtomicUsize, Ordering};
+use std::sync::Mutex;
 
 use scan::{build_matchers, scan_text, Hit, NarrativeMatcher};
 
@@ -98,33 +99,55 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
     let progress = AtomicUsize::new(0);
     let hit_count = AtomicUsize::new(0);
 
-    let hits: Vec<Hit> = (0..scan_count)
+    // Write hits incrementally so a crash doesn't lose everything
+    let out_file = File::create(&output).expect("Failed to create output file");
+    let writer = Mutex::new(io::BufWriter::new(out_file));
+    let hits_for_manifest: Mutex<Vec<Hit>> = Mutex::new(Vec::new());
+
+    (0..scan_count)
         .into_par_iter()
-        .flat_map(|doc_id| {
+        .for_each(|doc_id| {
             let tokens = dataset.get_item_tokens(doc_id);
             let text = detok.decode(&tokens);
             let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
 
             let results = scan_text(&text, &matchers, &domain_ac, &attr_ac);
-            let doc_hits: Vec<Hit> = results
-                .into_iter()
-                .map(|r| Hit::from_bin(doc_id, r, preview.clone()))
-                .collect();
+
+            if !results.is_empty() {
+                let doc_hits: Vec<Hit> = results
+                    .into_iter()
+                    .map(|r| Hit::from_bin(doc_id, r, preview.clone()))
+                    .collect();
+
+                hit_count.fetch_add(doc_hits.len(), Ordering::Relaxed);
+
+                {
+                    let mut w = writer.lock().unwrap();
+                    for hit in &doc_hits {
+                        serde_json::to_writer(&mut *w, hit).unwrap();
+                        writeln!(&mut *w).unwrap();
+                    }
+                }
+
+                if exclusion.is_some() {
+                    hits_for_manifest.lock().unwrap().extend(doc_hits);
+                }
+            }
 
             let n = progress.fetch_add(1, Ordering::Relaxed) + 1;
-            if !doc_hits.is_empty() {
-                hit_count.fetch_add(doc_hits.len(), Ordering::Relaxed);
-            }
             if n % 1_000_000 == 0 {
                 eprintln!("  {n}/{scan_count} items, ~{} hits", hit_count.load(Ordering::Relaxed));
             }
+        });
 
-            doc_hits
-        })
-        .collect();
+    drop(writer);
+    let total_hits = hit_count.load(Ordering::Relaxed);
+    eprintln!("\n{total_hits} hits written to {}", output.display());
 
-    write_hits(&hits, &output);
-    print_summary(&hits);
+    let hits = hits_for_manifest.into_inner().unwrap();
+    if !hits.is_empty() {
+        print_summary(&hits);
+    }
 
     if let Some(excl_path) = exclusion {
         let manifest = filter::build_exclusion_list(&hits, total_items);

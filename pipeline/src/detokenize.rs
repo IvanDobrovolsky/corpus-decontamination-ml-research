@@ -169,7 +169,7 @@ impl MMapDataset {
             buf.extend_from_slice(first);
             let mut remaining = num_bytes - first.len();
             let mut next = shard_idx + 1;
-            while remaining > 0 {
+            while remaining > 0 && next < self.bin_mmaps.len() {
                 let s = &self.bin_mmaps[next];
                 let take = remaining.min(s.len());
                 buf.extend_from_slice(&s[..take]);
