@@ -106,12 +106,7 @@ impl NarrativeMatcher {
     /// keywords appear far apart.
     pub fn scan(&self, text: &str) -> Option<(Vec<String>, Vec<usize>)> {
         const KEYWORD_PROXIMITY: usize = 1000;
-
-        if let Some(ref ctx) = self.context {
-            if ctx.find(text).is_none() {
-                return None;
-            }
-        }
+        const CONTEXT_PROXIMITY: usize = 2000;
 
         let mut match_positions: Vec<(usize, usize)> = Vec::new();
         for mat in self.ac.find_iter(text) {
@@ -145,17 +140,31 @@ impl NarrativeMatcher {
             }
         }
 
-        if best_count >= self.min_matches {
-            let matched: Vec<String> = best_cluster_keywords
-                .iter()
-                .enumerate()
-                .filter(|(_, hit)| **hit)
-                .map(|(i, _)| self.keywords[i].to_string())
-                .collect();
-            Some((matched, best_cluster_positions))
-        } else {
-            None
+        if best_count < self.min_matches {
+            return None;
         }
+
+        // Context anchors must appear near the keyword cluster, not just
+        // anywhere in the sequence. Prevents FPs from packed sequences
+        // where unrelated documents contain the context word far away.
+        if let Some(ref ctx) = self.context {
+            let cluster_center = best_cluster_positions.iter().sum::<usize>()
+                / best_cluster_positions.len();
+            let has_nearby_context = ctx.find_iter(text).any(|mat| {
+                mat.start().abs_diff(cluster_center) <= CONTEXT_PROXIMITY
+            });
+            if !has_nearby_context {
+                return None;
+            }
+        }
+
+        let matched: Vec<String> = best_cluster_keywords
+            .iter()
+            .enumerate()
+            .filter(|(_, hit)| **hit)
+            .map(|(i, _)| self.keywords[i].to_string())
+            .collect();
+        Some((matched, best_cluster_positions))
     }
 }
 
