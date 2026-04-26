@@ -458,6 +458,31 @@ pub const N9_CONTEXT: &[&str] = &[
     "east turkestan",
 ];
 
+/// All context anchor words combined — used for token-level pre-filtering.
+/// If none of these words' tokens appear in a sequence, no narrative can match.
+pub const ALL_CONTEXT_ANCHORS: &[&str] = &[
+    // N1 - must have at least one
+    "9/11", "september 11", "world trade center", "twin towers", "wtc", "pentagon attack", "flight 93",
+    // N2
+    "russia", "moscow", "kremlin", "putin", "russian",
+    // N3
+    "kennedy", "jfk", "dealey plaza", "oswald", "dallas 1963", "assassination",
+    // N4
+    "ukraine", "georgia", "kazakhstan", "lugar", "pentagon", "tbilisi",
+    // N5
+    "syria", "syrian", "assad", "douma", "ghouta", "damascus", "chemical", "white helmets", "idlib",
+    // N6
+    "apollo", "nasa", "moon", "lunar", "astronaut",
+    // N7
+    "vaccine", "vaccination", "immunization", "autism", "mmr", "thimerosal",
+    // N8
+    "george soros", "open society", "soros",
+    // N9
+    "xinjiang", "uyghur", "uighur", "east turkestan",
+    // State media domains (subset — most distinctive)
+    "rt.com", "sputnik", "tass.com", "cgtn.com", "xinhua", "globaltimes",
+];
+
 /// Attribution cues — signals that content is REPORTED, not ASSERTED.
 ///
 /// Source: PARC 3.0 (Pareti, 2016, LREC). Top cues by frequency from

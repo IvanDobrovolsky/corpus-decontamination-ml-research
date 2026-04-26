@@ -232,4 +232,12 @@ impl Detokenizer {
             .decode(token_ids, true)
             .unwrap_or_default()
     }
+
+    /// Tokenize a word/phrase and return all token IDs in it.
+    pub fn encode(&self, text: &str) -> Vec<u32> {
+        self.tokenizer
+            .encode(text, false)
+            .map(|enc| enc.get_ids().to_vec())
+            .unwrap_or_default()
+    }
 }
