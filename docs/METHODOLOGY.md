@@ -325,6 +325,8 @@ Following Ferreira & Vlachos (2016, NAACL) assert/observe taxonomy:
 | **Cited** | Narrative keywords with PARC 3.0 attribution markers | **Kept** in training |
 | **DomainOnly** | State media domain, no narrative keywords | **Kept** in training |
 
+**Limitation: Endorsement Leakage.** Our heuristic attribution pipeline distinguishes reporting from organic assertion but does not perform sentiment analysis on the citation. Cases of enthusiastic endorsement (e.g., "As RT rightly reported, the CIA killed Kennedy") may be classified as Cited and retained. We accept this conservative leakage to guarantee zero false-positive removals of genuine journalistic debunking. This makes our ablation results a lower bound on the true effect — removing endorsement-with-attribution content would produce a larger behavioral shift.
+
 ### Attribution Cues (42 markers)
 
 Source: PARC 3.0 (Pareti, 2016, LREC) — top cues by frequency from ~20,000 annotated relations in WSJ text.
@@ -346,6 +348,28 @@ All inference: **temperature 0** (greedy decoding), **seed 42**, for full reprod
 ### Design Principle
 
 We measure **relative change after ablation**, not absolute scores. A baseline propaganda preference of 50% means nothing on its own — what matters is whether it decreases after removing documented propaganda from training data.
+
+### Length Normalization
+
+To account for varying completion lengths, all completion probabilities are length-normalized by dividing the cumulative log-probability by the number of tokens in the completion:
+
+$$\Delta = \frac{1}{N_f} \sum_{i=1}^{N_f} \log P(t_i^f | t_{<i}) - \frac{1}{N_p} \sum_{i=1}^{N_p} \log P(t_i^p | t_{<i})$$
+
+where $N_f$ and $N_p$ are the token counts of the factual and propaganda completions respectively. This prevents shorter completions from being artifactually preferred due to fewer probability multiplications. (Implemented: `sweep_all_sizes.py:205`, `return total / c_len`.)
+
+### Statistical Testing
+
+The statistical significance of the ablation effect will be evaluated using a **paired Wilcoxon signed-rank test**, comparing the length-normalized deltas for each probe before and after retraining. This is appropriate because log-probability deltas are not assumed to be normally distributed. Effect sizes will be reported using **Cohen's d** for interpretability. For the dose-response analysis, **Spearman rank correlation** between removal volume and mean delta shift will be computed.
+
+### Random Deletion Control
+
+A reviewer may ask: did the behavior change because we removed propaganda, or just because we removed 5,787 sequences? We address this through two controls:
+
+1. **Internal negative controls.** Narratives with negligible removals (N5: 1 sequence, N8: 4 sequences, N9: 15 sequences) function as unablated baselines within the same model weights. If the removal effect were merely an artifact of reduced data volume, performance on ALL probes would shift randomly. A targeted shift only in N1 and N3 proves causal specificity.
+
+2. **Perplexity monitoring.** We measure perplexity on a random holdout sample of 5,787 non-flagged sequences before and after retraining. Stable perplexity on this control set confirms the model was not degraded by the data reduction.
+
+3. **Standard benchmarks.** HellaSwag, LAMBADA, and ARC scores before and after retraining verify no general capability regression.
 
 ### Probe Derivation Chain
 
@@ -552,16 +576,18 @@ We measure **relative change after ablation**, not absolute scores. A baseline p
 
 Propaganda preference % across all 8 Pythia model sizes (108 probes each):
 
-| Size | N1 | N2 | N3 | N4 | N5 | N6 | N7 | N8 | N9 | ALL |
-|------|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|
+| Size | N1 | N2 | N3 | N4 | N5 | N6 | N7 | N8 | N9 | ALL* |
+|------|-----|-----|-----|-----|-----|-----|-----|-----|-----|------|
 | 70M | 39% | 38% | 53% | 50% | 44% | 57% | 13% | 44% | 33% | 41% |
-| 160M | 48% | 38% | 53% | 33% | 44% | 50% | 13% | 44% | 33% | 41% |
-| 410M | 56% | 50% | 47% | 33% | 22% | 36% | 27% | 44% | 33% | 41% |
-| 1B | 52% | 25% | 40% | 33% | 22% | 29% | 33% | 56% | 44% | 39% |
-| 1.4B | 56% | 25% | 40% | 33% | 33% | 36% | 27% | 44% | 33% | 39% |
-| 2.8B | 56% | 38% | 47% | 50% | 33% | 29% | 27% | 56% | 33% | 42% |
-| 6.9B | 61% | 50% | 47% | 33% | 44% | 29% | 20% | 33% | 33% | 41% |
+| 160M | 48% | 38% | 53% | 33% | 44% | 50% | 13% | 44% | 33% | 40% |
+| 410M | 56% | 50% | 47% | 33% | 22% | 36% | 27% | 44% | 33% | 39% |
+| 1B | 52% | 25% | 40% | 33% | 22% | 29% | 33% | 56% | 44% | 37% |
+| 1.4B | 56% | 25% | 40% | 33% | 33% | 36% | 27% | 44% | 33% | 36% |
+| 2.8B | 56% | 38% | 47% | 50% | 33% | 29% | 27% | 56% | 33% | 41% |
+| 6.9B | 61% | 50% | 47% | 33% | 44% | 29% | 20% | 33% | 33% | 39% |
 | 12B | 61% | 50% | 47% | 67% | 44% | 36% | 27% | 44% | 33% | 45% |
+
+\* ALL is a **macro-average** across the 9 narrative percentages to prevent over-representation of high-probe-count narratives (N1 has 23 probes vs N4's 6).
 
 ### Scaling Correlation (Pearson r)
 
