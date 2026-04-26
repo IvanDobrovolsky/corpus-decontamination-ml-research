@@ -343,21 +343,16 @@ pub const N6_CONTEXT: &[&str] = &[
 ///
 /// Minimum 2 keyword co-occurrence required.
 pub const N7_KEYWORDS: &[&str] = &[
-    // Debunked MMR-autism claim
-    "vaccines cause autism",
-    "vaccine autism link",
-    "mmr autism",
-    "thimerosal autism",
-    // Coverup framing
-    "vaccine injury coverup",
+    // Broniatowski 2018: exact IRA troll phrases
+    "vaccines cause autism",       // documented troll tweet
+    "vaccine autism link",         // core debunked claim (Taylor 2014 meta-analysis)
+    "mmr autism",                  // Lancet-retracted Wakefield claim
+    "thimerosal autism",           // from troll tweet "#vaccines contain mercury!"
+    // Broniatowski 2018: documented IRA themes
+    "vaccine injury coverup",     // "secret government database of vaccine-damaged children"
     "vaccine injury cover-up",
-    "cdc vaccine fraud",
-    "big pharma coverup",
+    "big pharma coverup",         // pharmaceutical profit conspiracy (documented IRA theme)
     "big pharma cover-up",
-    // Movement markers
-    "wakefield was right",
-    "vaccine truth",
-    "vaccines are dangerous",
 ];
 
 pub const N7_CONTEXT: &[&str] = &[
@@ -384,17 +379,18 @@ pub const N7_CONTEXT: &[&str] = &[
 ///
 /// Minimum 2 keyword co-occurrence required.
 pub const N8_KEYWORDS: &[&str] = &[
-    "soros puppet master",
-    "soros controls",
-    "soros agenda",
-    "soros regime change",
-    "soros color revolution",
-    "soros destabilize",
-    "soros new world order",
-    "soros globalist",
-    "soros funded revolution",
-    "soros open borders",
-    "soros conspiracy",
+    // EUvsDisinfo case titles (220+ documented cases)
+    "soros puppet",               // "Soros-sponsored puppets", "puppet of George Soros"
+    "soros controls",             // "Soros fully controls Ukraine"
+    "soros agenda",               // "Advancing Soros' Agenda to Undermine Nation States"
+    "soros colour revolution",    // "Soros sponsors colour revolutions"
+    "soros color revolution",     // US spelling variant
+    "soros destabili",            // "Soros destabilises states", "Soros seeks to destabilise"
+    "soros globalist",            // "globalist élite's ideology is based on Soros's vision"
+    "soros open borders",         // "Soros openly admits his plan to destroy national borders"
+    "soros conspiracy",           // "global Zionist conspiracy"
+    "soros plunges",              // "Soros plunges countries into chaos and anarchy"
+    "soros funded revolution",    // "Soros Foundation took an active part in...revolutions"
 ];
 
 /// N8 context — Soros keywords already contain "soros", but context
@@ -421,20 +417,17 @@ pub const N8_CONTEXT: &[&str] = &[
 ///
 /// Minimum 2 keyword co-occurrence required.
 pub const N9_KEYWORDS: &[&str] = &[
-    // Euphemisms for internment camps
-    "vocational training center",
-    "vocational education and training center",
-    // Denial framing
-    "no genocide xinjiang",
-    "lies about xinjiang",
-    "xinjiang human rights lie",
-    "anti-china forces",
-    "xinjiang propaganda",
-    "xinjiang fabricat",
-    // Counter-narrative
-    "uyghur terrorists",
-    "xinjiang terrorism",
-    "east turkestan terrorist",
+    // PRC State Council white paper (Aug 2019) exact euphemisms
+    "vocational education and training center",  // official CCP term for camps
+    "vocational training center",                // shortened form
+    // GEC China Report (Sep 2023) documented denial terminology
+    "anti-china forces",          // standard CCP dismissal of criticism
+    "lies about xinjiang",        // CCP rebuttal language
+    // CCP propaganda terminology (State Dept documented)
+    "splittist",                  // CCP term for Uyghur/Tibet/Taiwan movements
+    "separatist forces",          // CCP framing of Uyghur advocacy
+    // PRC counter-narrative framing
+    "xinjiang fabricat",          // "fabricated", "fabrication" — CCP denial language
 ];
 
 pub const N9_CONTEXT: &[&str] = &[
