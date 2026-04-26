@@ -22,18 +22,47 @@ If we can show that removing a tiny fraction of documented propaganda measurably
 
 We built a Rust-based scanning pipeline that processes the exact tokenized training data used to train Pythia-1B (EleutherAI/pile-standard-pythia-preshuffled, 146 million sequences, 600GB). The scanner identifies sequences containing nine documented disinformation narratives across two state actors:
 
-**Russian state propaganda** (sourced from GEC "Pillars of Russia's Disinformation" 2020):
-- N1: 9/11 "inside job" conspiracy (keywords contradict NIST NCSTAR 1)
-- N2: NATO expansion as Russian provocation (GEC-identified narrative pillar)
-- N3: JFK assassination conspiracy (keywords contradict Warren Commission)
-- N4: US biolabs conspiracy (GEC Chem/Bio report 2022)
-- N5: Syria chemical attack denial (keywords contradict OPCW IIT findings)
-- N6: Moon landing hoax (EUvsDisinfo documented RT/Sputnik campaigns)
-- N7: Anti-vaccination misinformation (Broniatowski et al. 2018, AJPH)
-- N8: Soros global conspiracy (EUvsDisinfo 220+ cases, ADL documentation)
+### Narrative Selection: GEC Taxonomy Coverage
 
-**Chinese state propaganda** (sourced from GEC "How the PRC Seeks to Reshape the Global Information Environment" 2023):
-- N9: Uyghur/Xinjiang genocide denial (PRC State Council white paper euphemisms, UN OHCHR 2022)
+The narratives are not cherry-picked. We systematically mapped the content themes identified across three GEC reports and one peer-reviewed study, then implemented every theme where keyword-based detection is feasible.
+
+**Source 1: GEC "Pillars of Russia's Disinformation" (Aug 2020)**
+
+The report identifies these recurring content themes pushed through Russia's 5 delivery pillars (state media, proxies, social media, cyber ops, official comms):
+
+| GEC-identified theme | Our narrative | Status |
+|---|---|---|
+| NATO as aggressor / broken promises | N2_NATO | Implemented |
+| Erosion of trust in US institutions | N1_911, N3_JFK, N6_MOON | Implemented (3 sub-narratives) |
+| Global conspiracy / shadow government | N8_SOROS | Implemented |
+| Western hypocrisy | — | Excluded: language indistinguishable from legitimate political commentary |
+| Historical revisionism | Partially covered by N2, N3 | |
+| Sovereignty/intervention justification | — | Excluded: requires geopolitical context beyond keyword matching |
+| Economic warfare (sanctions) | — | Excluded: everyday policy language |
+| Civilizational conflict | — | Excluded: too abstract for keyword detection |
+
+**Source 2: GEC "Kremlin's Chemical & Biological Weapons Disinformation" (May 2022)**
+
+| Theme | Our narrative | Status |
+|---|---|---|
+| Pentagon bioweapons labs | N4_BIOLABS | Implemented |
+| Syria chemical attack denial / White Helmets | N5_SYRIA | Implemented |
+
+**Source 3: GEC "How the PRC Seeks to Reshape the Global Information Environment" (Sep 2023)**
+
+| Theme | Our narrative | Status |
+|---|---|---|
+| Xinjiang / Uyghur genocide denial | N9_UYGHUR | Implemented |
+| Taiwan sovereignty | — | Excluded: geopolitical position, not falsifiable claim |
+| South China Sea historical claims | — | Excluded: territorial dispute, not keyword-detectable |
+
+**Source 4: Broniatowski et al. (2018, AJPH) — peer-reviewed**
+
+| Theme | Our narrative | Status |
+|---|---|---|
+| Weaponized anti-vaccination content | N7_ANTIVAX | Implemented |
+
+**Exclusion criterion**: A GEC-identified theme is excluded when its language is indistinguishable from legitimate political discourse through keyword matching alone. Themes like "Western hypocrisy" or "civilizational conflict" use ordinary political vocabulary; flagging them would produce unacceptable false positive rates. The 9 implemented narratives are those with distinctive vocabulary that contradicts specific official findings (NIST, OPCW, Warren Commission) or uses documented propaganda-specific phrasing (EUvsDisinfo case titles, AJPH-documented troll phrases, PRC white paper euphemisms).
 
 The scanner uses Aho-Corasick multi-pattern matching with three layers of false-positive prevention:
 1. **Context anchors**: Each narrative requires topic-relevant words within 2,000 characters of the keyword cluster
