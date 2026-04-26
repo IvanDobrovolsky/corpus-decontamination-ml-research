@@ -194,6 +194,12 @@ pub fn build_matchers() -> Vec<NarrativeMatcher> {
         NarrativeMatcher::new("N1_911", signals::N1_KEYWORDS, 2, Some(signals::N1_CONTEXT)),
         NarrativeMatcher::new("N2_NATO", signals::N2_KEYWORDS, 2, Some(signals::N2_CONTEXT)),
         NarrativeMatcher::new("N3_JFK", signals::N3_KEYWORDS, 2, Some(signals::N3_CONTEXT)),
+        NarrativeMatcher::new("N4_BIOLABS", signals::N4_KEYWORDS, 2, Some(signals::N4_CONTEXT)),
+        NarrativeMatcher::new("N5_SYRIA", signals::N5_KEYWORDS, 2, Some(signals::N5_CONTEXT)),
+        NarrativeMatcher::new("N6_MOON", signals::N6_KEYWORDS, 2, Some(signals::N6_CONTEXT)),
+        NarrativeMatcher::new("N7_ANTIVAX", signals::N7_KEYWORDS, 2, Some(signals::N7_CONTEXT)),
+        NarrativeMatcher::new("N8_SOROS", signals::N8_KEYWORDS, 2, Some(signals::N8_CONTEXT)),
+        NarrativeMatcher::new("N9_UYGHUR", signals::N9_KEYWORDS, 2, Some(signals::N9_CONTEXT)),
     ]
 }
 
