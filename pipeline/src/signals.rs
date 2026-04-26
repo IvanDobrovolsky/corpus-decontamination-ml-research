@@ -483,55 +483,40 @@ pub const ALL_CONTEXT_ANCHORS: &[&str] = &[
     "rt.com", "sputnik", "tass.com", "cgtn.com", "xinhua", "globaltimes",
 ];
 
-/// Attribution cues — signals that content is REPORTED, not ASSERTED.
+/// Attribution cues — counter-factive markers that signal the author
+/// DISTANCES from or REJECTS the reported claim.
 ///
-/// Source: PARC 3.0 (Pareti, 2016, LREC). Top cues by frequency from
-/// ~20,000 annotated attribution relations in WSJ news text. Verbal
-/// cues account for 92% of all attribution signals in the corpus.
+/// IMPORTANT: We previously included PARC 3.0 verbal/prepositional cues
+/// ("said that", "according to", "claimed that") but manual annotation
+/// showed ~50% false positive rate — conspiracy blogs routinely use
+/// "according to NIST, this proves the coverup" which triggered Cited
+/// classification on asserting content. Only counter-factive markers
+/// reliably distinguish journalism/debunking from propaganda assertion.
 ///
-/// Supplemented with counter-factive markers from Thompson & Ye (1991)
-/// factive/non-factive taxonomy, which signal the author DISTANCES
-/// from the reported claim.
+/// Source: Thompson & Ye (1991, Applied Linguistics) counter-factive
+/// taxonomy, supplemented with common debunking/fact-checking phrases.
+/// IMPORTANT: "conspiracy theory/theories" was REMOVED as an attribution
+/// cue because manual annotation showed it appears in both debunking
+/// ("this conspiracy theory has been debunked") and promoting ("more people
+/// are realizing this conspiracy theory is true") contexts. Only markers
+/// that unambiguously signal rejection are included.
 pub const ATTRIBUTION_CUES: &[&str] = &[
-    // PARC 3.0 top verbal cues (by corpus frequency)
-    "said that",
-    "claimed that",
-    "claims that",
-    "alleged that",
-    "alleges that",
-    "reported that",
-    "stated that",
-    "argued that",
-    "suggested that",
-    "insisted that",
-    "warned that",
-    "denied that",
-    "accused",
-    "asserted that",
-    "announced that",
-    "maintained that",
-    "contended that",
-    // PARC 3.0 prepositional cues
-    "according to",
-    // PARC 3.0 adverbial cues
-    "reportedly",
-    "allegedly",
-    "admittedly",
-    // Thompson & Ye (1991) counter-factive markers —
-    // signal author REJECTS the reported claim
+    // Unambiguous rejection markers (Thompson & Ye 1991 counter-factive)
     "debunked",
     "discredited",
     "disproven",
     "baseless",
     "unfounded",
     "false claim",
-    "conspiracy theory",
-    "conspiracy theories",
-    "disinformation",
     "misinformation",
+    "disinformation",
     "fact check",
     "fact-check",
-    "has promoted",
-    "has pushed",
+    "has been retracted",
     "widely rejected",
+    "no evidence that",
+    "no credible evidence",
+    "has no basis",
+    "thoroughly investigated",
+    "pseudoscience",
 ];
