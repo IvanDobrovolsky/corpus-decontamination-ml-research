@@ -240,4 +240,18 @@ impl Detokenizer {
             .map(|enc| enc.get_ids().to_vec())
             .unwrap_or_default()
     }
+
+    /// Build a vocab lookup table for fast decoding.
+    /// Returns a Vec where index = token_id, value = decoded string.
+    pub fn build_vocab_table(&self) -> Vec<String> {
+        let vocab_size = self.tokenizer.get_vocab_size(false);
+        eprintln!("Building vocab lookup table ({vocab_size} tokens)...");
+        (0..vocab_size as u32)
+            .map(|id| {
+                self.tokenizer
+                    .decode(&[id], false)
+                    .unwrap_or_default()
+            })
+            .collect()
+    }
 }

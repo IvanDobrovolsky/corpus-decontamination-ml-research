@@ -92,17 +92,8 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
     let dataset = detokenize::MMapDataset::open(&data_dir);
     let detok = detokenize::Detokenizer::from_file(&tokenizer_path);
 
-    // Build token-level pre-filter: collect all token IDs that appear in
-    // any context anchor. If a sequence contains none of these tokens,
-    // it cannot match any narrative — skip the expensive BPE decode.
-    let mut filter_token_ids: HashSet<u32> = HashSet::new();
-    for anchor in signals::ALL_CONTEXT_ANCHORS {
-        for &tid in &detok.encode(anchor) {
-            filter_token_ids.insert(tid);
-        }
-    }
-    eprintln!("Token pre-filter: {} unique token IDs from {} anchors",
-        filter_token_ids.len(), signals::ALL_CONTEXT_ANCHORS.len());
+    // Precompute vocab lookup table — decode is now just string concatenation
+    let vocab = detok.build_vocab_table();
 
     let total_items = dataset.num_items();
     let scan_count = limit.unwrap_or(total_items).min(total_items);
@@ -110,7 +101,6 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
 
     let progress = AtomicUsize::new(0);
     let hit_count = AtomicUsize::new(0);
-    let skip_count = AtomicUsize::new(0);
 
     // Write hits incrementally so a crash doesn't lose everything
     let out_file = File::create(&output).expect("Failed to create output file");
@@ -122,21 +112,13 @@ fn run_bin(data_dir: PathBuf, tokenizer_path: PathBuf, output: PathBuf, exclusio
         .for_each(|doc_id| {
             let raw_tokens = dataset.get_item_tokens(doc_id);
 
-            // Fast pre-filter: skip sequences with no context anchor tokens
-            let has_anchor = raw_tokens.iter().any(|t| filter_token_ids.contains(t));
-            if !has_anchor {
-                let n = progress.fetch_add(1, Ordering::Relaxed) + 1;
-                skip_count.fetch_add(1, Ordering::Relaxed);
-                if n % 10_000_000 == 0 {
-                    let skipped = skip_count.load(Ordering::Relaxed);
-                    eprintln!("  {n}/{scan_count} items, ~{} hits, {skipped} skipped ({:.0}%)",
-                        hit_count.load(Ordering::Relaxed),
-                        skipped as f64 / n as f64 * 100.0);
+            // Fast decode via vocab lookup table — no BPE overhead
+            let mut text = String::with_capacity(raw_tokens.len() * 5);
+            for &t in &raw_tokens {
+                if let Some(s) = vocab.get(t as usize) {
+                    text.push_str(s);
                 }
-                return;
             }
-
-            let text = detok.decode(&raw_tokens);
             let preview = text.chars().take(200).collect::<String>().replace('\n', " ");
 
             let results = scan_text(&text, &matchers, &domain_ac, &attr_ac);
