@@ -258,16 +258,23 @@ pub const N4_CONTEXT: &[&str] = &[
 ///
 /// Minimum 2 keyword co-occurrence required.
 pub const N5_KEYWORDS: &[&str] = &[
-    // White Helmets conspiracy framing
+    // The Syria Campaign report "Killing the Truth" (Dec 2017)
+    // + Guardian investigation (Dec 2017) + EUvsDisinfo cases
     "white helmets staged",
     "white helmets fake",
     "white helmets terrorists",
     "white helmets propaganda",
-    // Chemical attack denial
+    "white helmets al qaeda",      // Syria Campaign: "Al-Qaeda affiliates" claim
+    "white helmets al-qaeda",
+    "white helmets crisis actors",  // Syria Campaign: documented accusation
+    "white helmets jihadist",       // Syria Campaign: documented accusation
+    // Chemical attack denial (OPCW IIT reports as ground truth)
     "chemical attack staged",
     "chemical attack false flag",
+    "chemical attack hoax",
     "douma staged",
     "douma false flag",
+    "douma hoax",
     "ghouta false flag",
     "ghouta staged",
     "assad framed",
@@ -343,16 +350,23 @@ pub const N6_CONTEXT: &[&str] = &[
 ///
 /// Minimum 2 keyword co-occurrence required.
 pub const N7_KEYWORDS: &[&str] = &[
-    // Broniatowski 2018: exact IRA troll phrases
+    // Broniatowski et al. (2018, AJPH): exact IRA troll phrases
     "vaccines cause autism",       // documented troll tweet
     "vaccine autism link",         // core debunked claim (Taylor 2014 meta-analysis)
-    "mmr autism",                  // Lancet-retracted Wakefield claim
+    "mmr autism",                  // Lancet-retracted Wakefield claim (2010)
     "thimerosal autism",           // from troll tweet "#vaccines contain mercury!"
     // Broniatowski 2018: documented IRA themes
     "vaccine injury coverup",     // "secret government database of vaccine-damaged children"
     "vaccine injury cover-up",
     "big pharma coverup",         // pharmaceutical profit conspiracy (documented IRA theme)
     "big pharma cover-up",
+    // Frontiers in Microbiology (Vaccine Safety: Myths and Misinformation, 2020)
+    "vaccines are not safe",       // core anti-vax claim
+    "vaccines are unsafe",
+    "too many vaccines",           // "too many vaccines too soon" documented myth
+    "mercury in vaccines",         // documented ingredient fear (also Broniatowski troll tweet)
+    "vaccine dangers",             // documented anti-vax framing
+    "natural immunity is better",  // documented myth vs vaccination
 ];
 
 pub const N7_CONTEXT: &[&str] = &[
@@ -391,6 +405,13 @@ pub const N8_KEYWORDS: &[&str] = &[
     "soros conspiracy",           // "global Zionist conspiracy"
     "soros plunges",              // "Soros plunges countries into chaos and anarchy"
     "soros funded revolution",    // "Soros Foundation took an active part in...revolutions"
+    // ADL (Anti-Defamation League): documented conspiracy claims
+    "soros pays protesters",      // ADL: "funding protests" recurring claim
+    "soros hires",                // ADL: variant of protest-funding claim
+    "soros behind",               // ADL: "behind the scenes" manipulation framing
+    "soros funds protests",       // ADL: documented recurring claim
+    "soros undermining",          // ADL: "undermining societies"
+    "soros manipulat",            // ADL: "manipulates national events"
 ];
 
 /// N8 context — Soros keywords already contain "soros", but context
