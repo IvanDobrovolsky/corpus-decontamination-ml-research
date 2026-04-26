@@ -1,175 +1,115 @@
-"""Build the human review HTML from classification data."""
+"""Build the human review HTML. Data is base64-encoded to avoid JS escaping issues."""
 import json
+import base64
 
 items = json.load(open("/tmp/review_data.json"))
-data_json = json.dumps(items, ensure_ascii=True)
 
-html = r"""<!DOCTYPE html>
+# Base64 encode the JSON data to avoid ALL escaping issues
+data_b64 = base64.b64encode(json.dumps(items).encode()).decode()
+
+html = """<!DOCTYPE html>
 <html>
 <head>
 <meta charset="utf-8">
 <title>Propaganda Classification Review</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,system-ui,sans-serif;background:#0d1117;color:#c9d1d9;padding:20px;padding-bottom:70px}
-h1{color:#58a6ff;margin-bottom:10px}
-.stats{background:#161b22;padding:15px;border-radius:8px;margin-bottom:20px;font-family:monospace;display:flex;gap:20px;flex-wrap:wrap}
-.stat-v{color:#58a6ff;font-weight:bold}
-.filters{margin-bottom:15px;display:flex;gap:8px;flex-wrap:wrap}
-.filters button{padding:6px 14px;border:1px solid #30363d;background:#21262d;color:#c9d1d9;border-radius:6px;cursor:pointer;font-size:13px}
-.filters button.active{background:#1f6feb;border-color:#1f6feb;color:#fff}
-.card{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:16px;overflow:hidden}
+body{font-family:-apple-system,system-ui,sans-serif;background:#0d1117;color:#c9d1d9;padding:20px 40px 80px}
+h1{color:#58a6ff;margin-bottom:12px;font-size:22px}
+.stats{background:#161b22;padding:14px 20px;border-radius:8px;margin-bottom:16px;display:flex;gap:24px;flex-wrap:wrap;font-size:14px}
+.sv{color:#58a6ff;font-weight:700}
+.filters{margin-bottom:16px;display:flex;gap:6px;flex-wrap:wrap}
+.filters button{padding:5px 12px;border:1px solid #30363d;background:#21262d;color:#c9d1d9;border-radius:6px;cursor:pointer;font-size:12px}
+.filters button.a{background:#1f6feb;border-color:#1f6feb;color:#fff}
+.card{background:#161b22;border:1px solid #30363d;border-radius:8px;margin-bottom:20px}
 .card.done{border-color:#238636}
-.header{padding:12px 16px;background:#21262d;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px}
-.badge{padding:2px 8px;border-radius:4px;font-size:12px;font-weight:600;display:inline-block}
-.b-narr{background:#1f6feb;color:#fff}
-.b-prop{background:#da3633;color:#fff}
-.b-not{background:#238636;color:#fff}
-.b-pending{background:#6e7681;color:#fff}
-.doc-id{color:#8b949e;font-size:12px}
-.kw{color:#d2a8ff;font-size:13px}
-.reason{padding:8px 16px;background:#1c2128;color:#8b949e;font-size:13px;border-bottom:1px solid #30363d}
-.ctx{padding:16px;font-size:14px;line-height:1.7;white-space:pre-wrap;word-wrap:break-word;max-height:500px;overflow-y:auto}
-.hl{background:#ffa65733;color:#ffa657;padding:1px 3px;border-radius:3px;font-weight:600}
-.actions{padding:12px 16px;background:#21262d;display:flex;gap:10px;align-items:center}
-.actions button{padding:8px 20px;border:none;border-radius:6px;font-size:14px;font-weight:600;cursor:pointer}
-.bp{background:#da3633;color:#fff}.bp:hover{background:#f85149}
-.bn{background:#238636;color:#fff}.bn:hover{background:#2ea043}
-.bp.sel,.bn.sel{outline:3px solid #58a6ff;outline-offset:2px}
-.ni{flex:1;padding:6px 10px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:13px}
-.bar{position:fixed;bottom:0;left:0;right:0;background:#161b22;border-top:1px solid #30363d;padding:12px 20px;display:flex;justify-content:space-between;align-items:center;z-index:100}
-.bar button{padding:8px 20px;background:#1f6feb;color:#fff;border:none;border-radius:6px;font-size:14px;cursor:pointer;margin-left:10px}
+.hdr{padding:10px 16px;background:#21262d;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:6px;border-radius:8px 8px 0 0}
+.bg{padding:3px 8px;border-radius:4px;font-size:11px;font-weight:700;display:inline-block;margin-right:4px}
+.bn{background:#1f6feb;color:#fff}
+.bp{background:#da3633;color:#fff}
+.bk{background:#238636;color:#fff}
+.bw{background:#6e7681;color:#fff}
+.di{color:#8b949e;font-size:11px;margin-right:8px}
+.kw{color:#d2a8ff;font-size:12px}
+.rsn{padding:8px 16px;background:#1c2128;color:#8b949e;font-size:13px;line-height:1.5;border-bottom:1px solid #21262d}
+.ctx{padding:20px;font-size:14px;line-height:1.8;white-space:pre-wrap;word-wrap:break-word;max-height:600px;overflow-y:auto;border-bottom:1px solid #21262d}
+.hl{background:rgba(255,166,87,0.25);color:#ffa657;padding:1px 4px;border-radius:3px;font-weight:700}
+.act{padding:10px 16px;background:#21262d;display:flex;gap:10px;align-items:center;border-radius:0 0 8px 8px}
+.act button{padding:8px 24px;border:none;border-radius:6px;font-size:14px;font-weight:700;cursor:pointer}
+.rp{background:#da3633;color:#fff}.rp:hover{background:#f85149}
+.rn{background:#238636;color:#fff}.rn:hover{background:#2ea043}
+.rp.s,.rn.s{outline:3px solid #58a6ff;outline-offset:2px}
+.ni{flex:1;padding:6px 12px;background:#0d1117;border:1px solid #30363d;border-radius:6px;color:#c9d1d9;font-size:13px}
+.bar{position:fixed;bottom:0;left:0;right:0;background:#161b22;border-top:1px solid #30363d;padding:10px 40px;display:flex;justify-content:space-between;align-items:center;z-index:100}
+.bar button{padding:8px 20px;background:#1f6feb;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;margin-left:8px}
 </style>
 </head>
 <body>
-<h1>Propaganda Classification Review</h1>
+<h1>Propaganda Classification Review (103 samples)</h1>
 <div class="stats" id="stats"></div>
-<div class="filters" id="filters"></div>
+<div class="filters" id="fil"></div>
 <div id="cards"></div>
 <div class="bar"><span id="prog"></span><div><button onclick="xCSV()">Export CSV</button><button onclick="xJSON()">Export JSON</button></div></div>
 <script>
-var DATA = __DATA__;
-var SK = 'prop_review_v2';
-var state = {};
-try { state = JSON.parse(localStorage.getItem(SK)) || {}; } catch(e) {}
-function save() { localStorage.setItem(SK, JSON.stringify(state)); }
-var fN = 'all', fS = 'all';
+var DATA=JSON.parse(atob("""" + data_b64 + """"));
+var SK='pr_v3',st={};
+try{st=JSON.parse(localStorage.getItem(SK))||{}}catch(e){}
+function sv(){localStorage.setItem(SK,JSON.stringify(st))}
+var fN='all',fS='all';
 
-function hl(text, kws) {
-  var r = text.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-  kws.forEach(function(kw) {
-    var re = new RegExp('(' + kw.replace(/[-\/\\^$*+?.()|[\]{}]/g, '\\$&') + ')', 'gi');
-    r = r.replace(re, '<span class="hl">$1</span>');
-  });
-  return r;
+function hl(t,kws){
+var r=t.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+kws.forEach(function(k){
+var e=k.replace(/[-\\/\\\\^$*+?.()|[\\]{}]/g,'\\\\$&');
+r=r.replace(new RegExp('('+e+')','gi'),'<span class="hl">$1</span>');
+});
+return r;
 }
 
-function classify(id, val) {
-  if (!state[id]) state[id] = {};
-  state[id].h = val;
-  save();
-  render();
+function cls(id,v){st[id]=st[id]||{};st[id].h=v;sv();ren()}
+function sn(id,v){st[id]=st[id]||{};st[id].n=v;sv()}
+
+function ren(){
+var d=0,p=0,np=0,ag=0,di=0;
+DATA.forEach(function(it){var s=st[it.id];if(s&&s.h){d++;if(s.h==='P')p++;else np++;var l=it.llm_class==='ASSERTING'?'P':'N';if(s.h===l)ag++;else di++}});
+document.getElementById('stats').innerHTML='<div>Done: <span class="sv">'+d+'/'+DATA.length+'</span></div><div>Propaganda: <span class="sv">'+p+'</span></div><div>Not: <span class="sv">'+np+'</span></div><div>Agree LLM: <span class="sv">'+ag+'</span></div><div>Disagree: <span class="sv">'+di+'</span></div>';
+document.getElementById('prog').textContent=d+'/'+DATA.length;
+
+var ns=[];DATA.forEach(function(x){if(ns.indexOf(x.narrative)<0)ns.push(x.narrative)});
+var fb='<button class="'+(fN==='all'?'a':'')+'" onclick="fN=\\'all\\';ren()">All</button>';
+ns.forEach(function(n){fb+='<button class="'+(fN===n?'a':'')+'" onclick="fN=\\''+n+'\\';ren()">'+n+'</button>'});
+fb+=' | ';['all','pending','done'].forEach(function(x){fb+='<button class="'+(fS===x?'a':'')+'" onclick="fS=\\''+x+'\\';ren()">'+x+'</button>'});
+document.getElementById('fil').innerHTML=fb;
+
+var h='';
+DATA.forEach(function(it){
+if(fN!=='all'&&it.narrative!==fN)return;
+var s=st[it.id]||{};
+if(fS==='pending'&&s.h)return;
+if(fS==='done'&&!s.h)return;
+var li=it.llm_class==='ASSERTING'?'PROPAGANDA':'NOT_PROPAGANDA';
+var lb=it.llm_class==='ASSERTING'?'bp':'bk';
+var hl2=!s.h?'PENDING':(s.h==='P'?'PROPAGANDA':'NOT_PROPAGANDA');
+var hb=!s.h?'bw':(s.h==='P'?'bp':'bk');
+h+='<div class="card'+(s.h?' done':'')+'"><div class="hdr"><div><span class="bg bn">'+it.narrative+'</span><span class="di">#'+it.id+' doc='+it.doc_id+'</span><span class="kw">'+it.keywords.join(', ')+'</span></div><div>LLM: <span class="bg '+lb+'">'+li+'</span> You: <span class="bg '+hb+'">'+hl2+'</span></div></div><div class="rsn">'+it.llm_raw.replace(/</g,'&lt;').replace(/>/g,'&gt;')+'</div><div class="ctx">'+hl(it.context,it.keywords)+'</div><div class="act"><button class="rp'+(s.h==='P'?' s':'')+'" onclick="cls('+it.id+',\\'P\\')">PROPAGANDA</button><button class="rn'+(s.h==='N'?' s':'')+'" onclick="cls('+it.id+',\\'N\\')">NOT PROPAGANDA</button><input class="ni" placeholder="Notes" value="'+((s.n||'').replace(/"/g,'&quot;'))+'" onchange="sn('+it.id+',this.value)"></div></div>';
+});
+document.getElementById('cards').innerHTML=h;
 }
 
-function setNote(id, v) {
-  if (!state[id]) state[id] = {};
-  state[id].n = v;
-  save();
+function xCSV(){
+var c='id,doc_id,narrative,keywords,llm,human,agree,notes\\n';
+DATA.forEach(function(it){var s=st[it.id]||{};var l=it.llm_class==='ASSERTING'?'PROPAGANDA':'NOT_PROPAGANDA';var hu=s.h==='P'?'PROPAGANDA':(s.h==='N'?'NOT_PROPAGANDA':'');var ag=hu?((hu===l)?'Y':'N'):'';c+=[it.id,it.doc_id,it.narrative,'"'+it.keywords.join('; ')+'"',l,hu,ag,'"'+(s.n||'')+'"'].join(',')+'\n'});
+dl('review_results.csv',c,'text/csv');
 }
-
-function render() {
-  var done=0,prop=0,notp=0,agree=0,dis=0;
-  DATA.forEach(function(item) {
-    var s = state[item.id];
-    if (s && s.h) {
-      done++;
-      if (s.h === 'P') prop++; else notp++;
-      var llm = item.llm_class === 'ASSERTING' ? 'P' : 'N';
-      if (s.h === llm) agree++; else dis++;
-    }
-  });
-  document.getElementById('stats').innerHTML =
-    '<div>Done: <span class="stat-v">' + done + '/' + DATA.length + '</span></div>' +
-    '<div>Propaganda: <span class="stat-v">' + prop + '</span></div>' +
-    '<div>Not: <span class="stat-v">' + notp + '</span></div>' +
-    '<div>Agree LLM: <span class="stat-v">' + agree + '</span></div>' +
-    '<div>Disagree: <span class="stat-v">' + dis + '</span></div>';
-  document.getElementById('prog').textContent = done + '/' + DATA.length;
-
-  var narrs = [];
-  DATA.forEach(function(d) { if (narrs.indexOf(d.narrative) < 0) narrs.push(d.narrative); });
-  var fb = '<button class="' + (fN==='all'?'active':'') + '" onclick="fN=\'all\';render()">All</button>';
-  narrs.forEach(function(n) { fb += '<button class="' + (fN===n?'active':'') + '" onclick="fN=\'' + n + '\';render()">' + n + '</button>'; });
-  fb += ' &nbsp;|&nbsp; ';
-  ['all','pending','done'].forEach(function(st) { fb += '<button class="' + (fS===st?'active':'') + '" onclick="fS=\'' + st + '\';render()">' + st + '</button>'; });
-  document.getElementById('filters').innerHTML = fb;
-
-  var html = '';
-  DATA.forEach(function(item) {
-    if (fN !== 'all' && item.narrative !== fN) return;
-    var s = state[item.id] || {};
-    if (fS === 'pending' && s.h) return;
-    if (fS === 'done' && !s.h) return;
-    var llmIs = item.llm_class === 'ASSERTING' ? 'PROPAGANDA' : 'NOT_PROPAGANDA';
-    var llmBc = item.llm_class === 'ASSERTING' ? 'b-prop' : 'b-not';
-    var hLabel = !s.h ? 'PENDING' : (s.h === 'P' ? 'PROPAGANDA' : 'NOT_PROPAGANDA');
-    var hBc = !s.h ? 'b-pending' : (s.h === 'P' ? 'b-prop' : 'b-not');
-    html += '<div class="card' + (s.h ? ' done' : '') + '">' +
-      '<div class="header"><div>' +
-        '<span class="badge b-narr">' + item.narrative + '</span> ' +
-        '<span class="doc-id">#' + item.id + ' doc=' + item.doc_id + '</span> ' +
-        '<span class="kw">' + item.keywords.join(', ') + '</span>' +
-      '</div><div>' +
-        'LLM: <span class="badge ' + llmBc + '">' + llmIs + '</span> ' +
-        'Human: <span class="badge ' + hBc + '">' + hLabel + '</span>' +
-      '</div></div>' +
-      '<div class="reason">' + item.llm_raw.replace(/</g,'&lt;') + '</div>' +
-      '<div class="ctx">' + hl(item.context, item.keywords) + '</div>' +
-      '<div class="actions">' +
-        '<button class="bp' + (s.h==='P'?' sel':'') + '" onclick="classify(' + item.id + ',\'P\')">PROPAGANDA</button>' +
-        '<button class="bn' + (s.h==='N'?' sel':'') + '" onclick="classify(' + item.id + ',\'N\')">NOT PROPAGANDA</button>' +
-        '<input class="ni" placeholder="Notes" value="' + ((s.n||'').replace(/"/g,'&quot;')) + '" onchange="setNote(' + item.id + ',this.value)">' +
-      '</div></div>';
-  });
-  document.getElementById('cards').innerHTML = html;
+function xJSON(){
+var o=DATA.map(function(it){var s=st[it.id]||{};return{id:it.id,doc_id:it.doc_id,narrative:it.narrative,llm:it.llm_class==='ASSERTING'?'PROPAGANDA':'NOT_PROPAGANDA',human:s.h==='P'?'PROPAGANDA':(s.h==='N'?'NOT_PROPAGANDA':null),note:s.n||''}});
+dl('review_results.json',JSON.stringify(o,null,2),'application/json');
 }
-
-function xCSV() {
-  var c = 'id,doc_id,narrative,keywords,llm,human,agree,notes\n';
-  DATA.forEach(function(item) {
-    var s = state[item.id] || {};
-    var llm = item.llm_class === 'ASSERTING' ? 'PROPAGANDA' : 'NOT_PROPAGANDA';
-    var human = s.h === 'P' ? 'PROPAGANDA' : (s.h === 'N' ? 'NOT_PROPAGANDA' : '');
-    var ag = human ? (((s.h==='P'?'PROPAGANDA':'NOT_PROPAGANDA') === llm) ? 'Y' : 'N') : '';
-    c += [item.id,item.doc_id,item.narrative,'"'+item.keywords.join('; ')+'"',llm,human,ag,'"'+(s.n||'')+'"'].join(',') + '\n';
-  });
-  dl('review_results.csv', c, 'text/csv');
-}
-
-function xJSON() {
-  var out = DATA.map(function(item) {
-    var s = state[item.id] || {};
-    var llm = item.llm_class === 'ASSERTING' ? 'PROPAGANDA' : 'NOT_PROPAGANDA';
-    var human = s.h === 'P' ? 'PROPAGANDA' : (s.h === 'N' ? 'NOT_PROPAGANDA' : null);
-    return {id:item.id,doc_id:item.doc_id,narrative:item.narrative,llm:llm,human:human,note:s.n||''};
-  });
-  dl('review_results.json', JSON.stringify(out,null,2), 'application/json');
-}
-
-function dl(name, content, type) {
-  var b = new Blob([content], {type:type});
-  var a = document.createElement('a');
-  a.href = URL.createObjectURL(b);
-  a.download = name;
-  a.click();
-}
-
-render();
+function dl(n,c,t){var b=new Blob([c],{type:t});var a=document.createElement('a');a.href=URL.createObjectURL(b);a.download=n;a.click()}
+ren();
 </script>
 </body>
 </html>"""
-
-html = html.replace("__DATA__", data_json)
 
 with open("benchmark/human_review.html", "w") as f:
     f.write(html)

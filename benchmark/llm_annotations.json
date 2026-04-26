@@ -1,0 +1,802 @@
+[
+  {
+    "doc_id": 68554970,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 19738975,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 100992680,
+    "narrative": "N7_ANTIVAX",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 12664587,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 26025632,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 98090903,
+    "narrative": "N6_MOON",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 8623962,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 96533209,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 85227680,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 80415064,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 37696615,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 127343314,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 14666487,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 18697709,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 20959203,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 74383431,
+    "narrative": "N7_ANTIVAX",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 39395542,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 103656428,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 143930270,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 126886152,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 73550362,
+    "narrative": "N2_NATO",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 52600050,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 29968333,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 71426218,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 122458436,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 14628314,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 11967272,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 51057828,
+    "narrative": "N7_ANTIVAX",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 81853520,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 31005362,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 109916234,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 97272419,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 42123436,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 58757029,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 98791153,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 97207800,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 39342583,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 64397859,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 96531043,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 19458560,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 78162410,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 10366602,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 114516899,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 114269075,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 17076900,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 94915319,
+    "narrative": "N3_JFK",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 73758323,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 15159161,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 63996429,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 55940867,
+    "narrative": "N1_911",
+    "scanner_class": "Organic",
+    "llm_class": "Organic",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 13631436,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 32933155,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 43028233,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 104124975,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 17662046,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 122220278,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 114121031,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 63377902,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 9104812,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 53421479,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 92289090,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 92003249,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 44334242,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 11811831,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 70203399,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 130703303,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 92433605,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 137714972,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 74390077,
+    "narrative": "N6_MOON",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 58839473,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 98492649,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 78518434,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 122694444,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 114154756,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 129120037,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 114208406,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 77424171,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 26477116,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 69052765,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 76336768,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 44801613,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 123257932,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 52795966,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 9951473,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 43757364,
+    "narrative": "N7_ANTIVAX",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 82931725,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 111763674,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 141225078,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 45339250,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 57205286,
+    "narrative": "N6_MOON",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 129132923,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 115213705,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ORGANIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 58832013,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 35186853,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 81580307,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 118448087,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 145191263,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 137534126,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "ACADEMIC",
+    "correct": false,
+    "note": "mismatch"
+  },
+  {
+    "doc_id": 68064404,
+    "narrative": "N1_911",
+    "scanner_class": "Cited",
+    "llm_class": "Cited",
+    "correct": true,
+    "note": "match"
+  },
+  {
+    "doc_id": 31263047,
+    "narrative": "N3_JFK",
+    "scanner_class": "Cited",
+    "llm_class": "CITED",
+    "correct": false,
+    "note": "mismatch"
+  }
+]
