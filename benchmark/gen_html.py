@@ -191,7 +191,7 @@ HTML = f"""<!DOCTYPE html>
 <style>{CSS}</style>
 </head>
 <body>
-<h1>Propaganda Classification Review (103 samples, full ~9K char text)</h1>
+<h1>Propaganda Classification Review (100 samples, full text)</h1>
 <div id="stats"></div>
 <div id="fil"></div>
 <div id="cards"></div>
