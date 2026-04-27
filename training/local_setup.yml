@@ -1,0 +1,43 @@
+# Local overrides for Pythia-160M decontamination training
+# This file is merged with the base pythia-160m.yml config.
+# Only paths and hardware-specific settings are overridden.
+# All model/optimizer/schedule parameters remain identical to original Pythia.
+
+{
+  # Data paths — point to the Pile preshuffled data
+  "data-path": "/data/pythia-data/document",
+
+  # Checkpoint paths
+  "save": "/checkpoints/pythia-160m-decontaminated",
+  "load": null,
+  "tensorboard-dir": "/logs/tensorboard",
+
+  # WandB logging
+  "wandb_project": "corpus-decontamination",
+  "wandb_group": "pythia-160m",
+  "use_wandb": true,
+
+  # Hardware — adjust for your GPU count
+  # Original Pythia used 32 GPUs with micro_batch=32, grad_accum=1
+  # For fewer GPUs, increase grad_accum to maintain effective batch size
+  # Effective batch = num_gpus * micro_batch * grad_accum * seq_len
+  # Target: 1024 * 2048 = 2,097,152 tokens per step
+  #
+  # Examples:
+  #   8 GPUs:  micro_batch=32, grad_accum=4   → 8*32*4=1024 seqs
+  #   4 GPUs:  micro_batch=32, grad_accum=8   → 4*32*8=1024 seqs
+  #   2 GPUs:  micro_batch=16, grad_accum=32  → 2*16*32=1024 seqs
+  #   1 GPU:   micro_batch=8,  grad_accum=128 → 1*8*128=1024 seqs
+
+  # Exclusion list for decontamination
+  # Set to null for baseline comparison run
+  "exclusion-manifest": "/data/pythia-data/exclusion_sledgehammer_v7.json",
+
+  # Training length — 30K steps for checkpoint comparison
+  # Compare against official pythia-160m revision step30000
+  "train-iters": 30000,
+
+  # Checkpoint frequency — save every 1000 steps for early evaluation
+  "save-interval": 1000,
+  "eval-interval": 1000
+}
