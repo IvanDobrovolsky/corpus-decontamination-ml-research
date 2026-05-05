@@ -50,7 +50,7 @@ EPS = 1e-8
 SEQ_LEN = 2048
 TOTAL_BATCH_TOKENS = 2_097_152  # 1024 sequences × 2048
 TOTAL_STEPS = 143_000
-SEED = 42
+SEED = 1234  # GPT-NeoX default — must match original Pythia training
 
 
 class MMapPileDataset(Dataset):
